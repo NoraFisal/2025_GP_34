@@ -4,29 +4,44 @@
 ---
 
 ## Introduction
-SPARK is a localized esports platform designed to empower Saudi players by providing fair visibility, structured evaluation, and professional opportunities.  
-The goal of this project is to bridge the gap between millions of amateur players and the small number of professionals by using data-driven insights and AI-powered recommendations.  
+The esports industry in Saudi Arabia is growing rapidly, supported by Vision 2030 initiatives and the increasing interest of millions of players [1].  
+Despite this progress, many talented players still face challenges in gaining fair visibility and accessing professional opportunities [2].  
+SPARK aims to address this gap by providing a localized mobile platform that allows Saudi players to showcase their skills, build teams, and connect with tournaments in an organized and trustworthy way.
 
-Key features of SPARK include:
-- Player profiles linked with in-game data (via API).
-- Team building and role-based matchmaking.
-- AI-powered analysis to suggest performance improvements and estimate win probabilities.
-- Direct communication channels between players and teams.
-- Tournament and event management with filters for accessibility.
+---
+
+## Key Features
+- Player profiles linked with in-game data (via Riot Games API).  
+- Team creation and role-based matchmaking.  
+- AI-powered analysis to suggest performance improvements and estimate win probabilities.  
+- Messaging system for players and teams.  
+- Tournament and event management hub with filters for accessibility.  
 
 ---
 
 ## Technology
-- **Programming Language:** Dart  
 - **Framework:** Flutter (for mobile app)  
-- **Backend:** Flask / Node.js  
+- **Backend:** Python (Flask)  
 - **Database:** MySQL / Firebase  
 - **AI Tools:** Scikit-learn, Pandas  
+- **API:** Riot Games API  
 - **Version Control:** GitHub  
 
 ---
 
 ## Launching Instructions
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/YourUsername/2025_GP_34.git
+
+```bash
+# 1. Clone this repository
+git clone https://github.com/YourUsername/2025_GP_SPARK.git
+
+# 2. Navigate to the project directory
+cd 2025_GP_34
+
+# 3. Install dependencies
+flutter pub get
+
+# 4. Run the application
+flutter run
+
+
