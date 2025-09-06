@@ -1,5 +1,6 @@
-
-![SPARK Logo](./SPARK-Logo.png)
+<p align="center">
+  <img src="./SPARK-Logo.png" alt="SPARK Logo" width="200"/>
+</p>
 
 # SPARK
 **Saudi Platform for AI-Driven Recognition & Knowledge**
