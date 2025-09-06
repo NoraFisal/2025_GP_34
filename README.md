@@ -1,3 +1,6 @@
+
+![SPARK Logo](./SPARK-removebg-preview.png)
+
 # SPARK
 **Saudi Platform for AI-Driven Recognition & Knowledge**
 
