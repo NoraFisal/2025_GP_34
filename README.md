@@ -1,5 +1,5 @@
 <p align="left">
-  <img src="./SPARK-Logo.png" alt="SPARK Logo" width="200"/>
+  <img src="./SPARK_Logo.png" alt="SPARK Logo" width="200"/>
 </p>
 
 # SPARK
