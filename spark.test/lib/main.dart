@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SPARK',
       theme: ThemeData(useMaterial3: true),
-      initialRoute: '/homepage', // يمكن تغييره لتغيير الصفحة الرئيسية
+      initialRoute: '/', // يمكن تغييره لتغيير الصفحة الرئيسية
       routes: {
         // Start / Landing
         '/': (context) => const StartPage(), // أو StartPage() حسب اختيارك
@@ -77,3 +77,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
