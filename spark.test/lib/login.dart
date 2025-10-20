@@ -1,4 +1,4 @@
-//new
+//new2
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,20 +22,27 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = true);
 
     try {
-      // ✅ تسجيل الدخول باستخدام FirebaseAuth
-      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text.trim(),
-      );
+      print('🔹 Attempting login...');
 
+      // Timeout prevents long waiting on slow network
+      final cred = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _emailCtrl.text.trim(),
+            password: _passwordCtrl.text.trim(),
+          )
+          .timeout(
+            const Duration(seconds: 15),
+            onTimeout: () =>
+                throw Exception('⏰ Connection timed out. Check your internet.'),
+          );
+
+      print('✅ Login successful, checking email verification...');
       final user = cred.user!;
-      await user.reload(); // تحديث بيانات المستخدم
+      await user.reload();
 
-      // ✅ التحقق من حالة البريد الإلكتروني
       if (!user.emailVerified) {
-        // إرسال بريد تحقق جديد
+        print('⚠️ Email not verified, sending new verification email...');
         await user.sendEmailVerification();
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -43,62 +50,68 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         );
-
-        // تسجيل الخروج فورًا حتى لا يبقى داخل Firebase
         await FirebaseAuth.instance.signOut();
-
         setState(() => _loading = false);
         return;
       }
 
+      print('📥 Checking user role in Firestore...');
       final uid = user.uid;
       final firestore = FirebaseFirestore.instance;
 
-      // 🔹 البحث في جدول Player
-      final playerDoc = await firestore.collection('Player').doc(uid).get();
+      final playerDoc = await firestore
+          .collection('Player')
+          .doc(uid)
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      final organizerDoc = await firestore
+          .collection('Organizer')
+          .doc(uid)
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      print('✅ Firestore check complete.');
 
       if (playerDoc.exists) {
+        print('✅ Player user found.');
         Navigator.pushReplacementNamed(context, '/homepage');
         return;
       }
 
-      // 🔹 البحث في جدول Organizer
-      final organizerDoc =
-          await firestore.collection('Organizer').doc(uid).get();
-
       if (organizerDoc.exists) {
+        print('✅ Organizer user found.');
         Navigator.pushReplacementNamed(context, '/organizerProfile');
         return;
       }
 
-      // إذا لم يكن موجوداً في أيّ جدول
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Profile not found in the database ⚠️'),
         ),
       );
     } on FirebaseAuthException catch (e) {
-      String msg = 'The email or password is incorrect';
-
-  // Handle common auth-related errors with one general message
-  if (e.code == 'user-not-found' ||
-      e.code == 'wrong-password' ||
-      e.code == 'invalid-email' ||
-      e.code == 'invalid-credential') {
-    msg = 'The email or password is incorrect';
-  } else {
-    // General catch for other issues (e.g., network, etc.)
-    msg = 'An unexpected error occurred. Please try again later.';
-  }
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(msg)),
-  );
-      
+      String msg;
+      switch (e.code) {
+        case 'user-not-found':
+        case 'wrong-password':
+        case 'invalid-email':
+        case 'invalid-credential':
+          msg = 'The email or password is incorrect';
+          break;
+        default:
+          msg = 'An unexpected error occurred: ${e.message}';
+      }
+      print('❌ FirebaseAuthException: ${e.code}');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    } on Exception catch (e) {
+      print('⏰ Timeout or network issue: $e');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unexpected error: $e')),
-      );
+      print('💥 Unexpected error: $e');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Unexpected error: $e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -113,11 +126,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color accentColor = Color(0xFF9E2819); // dark red
+    const Color accentColor = Color(0xFF9E2819);
     return Scaffold(
       body: Stack(
         children: [
-          // 🔹 خلفية الصفحة
           Image.asset(
             'assets/images/Background.png',
             fit: BoxFit.cover,
@@ -125,8 +137,6 @@ class _LoginPageState extends State<LoginPage> {
             height: double.infinity,
           ),
           Container(color: Colors.black.withOpacity(0.35)),
-
-          // 🔹 شعار التطبيق بالأعلى
           Positioned(
             top: 0,
             right: 0,
@@ -139,8 +149,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-
-          // 🔹 نموذج تسجيل الدخول
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -162,21 +170,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: 30),
-
-                          // ==========================
-                          // Email field
-                          // ==========================
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Email',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
+                          _label('Email'),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _emailCtrl,
@@ -190,27 +184,13 @@ class _LoginPageState extends State<LoginPage> {
                               final pattern =
                                   r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
                               if (!RegExp(pattern).hasMatch(v)) {
-                                return 'Enter a valid email address';
+                                return 'Enter a valid email';
                               }
                               return null;
                             },
                           ),
                           const SizedBox(height: 20),
-
-                          // ==========================
-                          // Password field
-                          // ==========================
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Password',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
+                          _label('Password'),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _passwordCtrl,
@@ -229,21 +209,15 @@ class _LoginPageState extends State<LoginPage> {
                                     () => _obscurePassword = !_obscurePassword),
                               ),
                             ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) {
-                                return 'Password is required';
-                              }
-                              return null;
-                            },
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'Password required' : null,
                           ),
                           const SizedBox(height: 16),
-
-                          // Forgot Password
                           Align(
                             alignment: Alignment.centerLeft,
                             child: TextButton(
-                              onPressed: () => Navigator.pushNamed(
-                                  context, '/forgotPassword'),
+                              onPressed: () =>
+                                  Navigator.pushNamed(context, '/forgotPassword'),
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: Size.zero,
@@ -259,10 +233,6 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: 40),
-
-                          // ==========================
-                          // Login button
-                          // ==========================
                           _customButton(
                             title: 'Login',
                             color: accentColor,
@@ -270,8 +240,6 @@ class _LoginPageState extends State<LoginPage> {
                             loading: _loading,
                           ),
                           const SizedBox(height: 16),
-
-                          // Signup button
                           _customButton(
                             title: 'Signup',
                             color: accentColor,
@@ -291,32 +259,42 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  InputDecoration _fieldDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: Colors.black38, fontSize: 14),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding:
-          const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: const BorderSide(color: Colors.white, width: 2),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: const BorderSide(color: Colors.red, width: 1),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: const BorderSide(color: Colors.red, width: 1),
-      ),
-    );
-  }
+  Widget _label(String text) => Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          text,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.9),
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+
+  InputDecoration _fieldDecoration(String hint) => InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.black38, fontSize: 14),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(color: Colors.white, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
+      );
 
   Widget _customButton({
     required String title,
@@ -341,8 +319,8 @@ class _LoginPageState extends State<LoginPage> {
             ? const SizedBox(
                 width: 22,
                 height: 22,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: Colors.white),
+                child:
+                    CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
               )
             : Text(
                 title,

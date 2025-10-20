@@ -1,3 +1,4 @@
+//new
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,19 +18,40 @@ class _SignupPageState extends State<SignupPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String _role = 'Player';
-  String? _gender; // ✅ Gender field
+  String? _gender;
   bool _loading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   DateTime? _birthDate;
+  String? _birthDateError; 
 
+  // ✅ التقويم بنفس تصميم صفحة اللوقن
   Future<void> _selectBirthDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime(2010, 1, 1),
+      initialDate: _birthDate ?? DateTime(2010, 1, 1),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
-      builder: (context, child) => Theme(data: ThemeData.dark(), child: child!),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF9E2819), // اللون الأساسي الأحمر
+              surface: Color(0xFF1E1E1E), // خلفية داكنة
+              onSurface: Colors.white,
+              onPrimary: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF2C2C2C),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Color(0xFF9E2819),
+                textStyle: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) setState(() => _birthDate = picked);
   }
@@ -47,24 +69,25 @@ class _SignupPageState extends State<SignupPage> {
   Future<void> _handleSignup() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Age & gender validation for Player
     if (_role == 'Player') {
-      if (_birthDate == null) {
-        _showMessage('Please select your date of birth');
-        return;
-      }
+  setState(() => _birthDateError = null); // تصفير الخطأ أولاً
 
-      int age = _calculateAge(_birthDate!);
-      if (age < 13) {
-        _showMessage('You must be at least 13 years old to register as a player');
-        return;
-      }
+  if (_birthDate == null) {
+    setState(() => _birthDateError = 'Date of birth is required');
+    return;
+  }
 
-      if (_gender == null) {
-        _showMessage('Please select your gender');
-        return;
-      }
-    }
+  int age = _calculateAge(_birthDate!);
+  if (age < 13) {
+    setState(() => _birthDateError = 'Not eligible — must be 13 or older');
+    return;
+  }
+
+  if (_gender == null) {
+    _showMessage('Please select your gender');
+    return;
+  }
+}
 
     setState(() => _loading = true);
     try {
@@ -76,13 +99,12 @@ class _SignupPageState extends State<SignupPage> {
 
       if (_role == 'Player') {
         final int age = _calculateAge(_birthDate!);
-
         await FirebaseFirestore.instance.collection('Player').doc(uid).set({
           'Name': _fullNameController.text.trim(),
           'Email': _emailController.text.trim(),
           'Age': age,
           'BirthDate': Timestamp.fromDate(_birthDate!),
-          'Gender': _gender, // ✅ Save gender
+          'Gender': _gender,
           'City': '',
           'Game': <String>[],
           'ProfilePhoto': "",
@@ -158,7 +180,6 @@ class _SignupPageState extends State<SignupPage> {
             height: double.infinity,
           ),
           Container(color: Colors.black.withOpacity(0.35)),
-
           Positioned(
             top: 0,
             right: 0,
@@ -171,7 +192,6 @@ class _SignupPageState extends State<SignupPage> {
               ),
             ),
           ),
-
           Positioned(
             top: 40,
             left: 16,
@@ -180,7 +200,6 @@ class _SignupPageState extends State<SignupPage> {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -202,8 +221,6 @@ class _SignupPageState extends State<SignupPage> {
                             ),
                           ),
                           const SizedBox(height: 30),
-
-                          // Role selection
                           _label('Role Selection'),
                           Row(
                             children: [
@@ -227,8 +244,6 @@ class _SignupPageState extends State<SignupPage> {
                             ],
                           ),
                           const SizedBox(height: 20),
-
-                          // Full Name
                           _label('Name'),
                           const SizedBox(height: 8),
                           _textField(
@@ -245,8 +260,6 @@ class _SignupPageState extends State<SignupPage> {
                             },
                           ),
                           const SizedBox(height: 20),
-
-                          // Email
                           _label('Email'),
                           const SizedBox(height: 8),
                           _textField(
@@ -266,8 +279,6 @@ class _SignupPageState extends State<SignupPage> {
                             },
                           ),
                           const SizedBox(height: 20),
-
-                          // Password
                           _label('Password'),
                           const SizedBox(height: 8),
                           _textField(
@@ -297,15 +308,14 @@ class _SignupPageState extends State<SignupPage> {
                               if (!RegExp(r'(?=.*[A-Z])').hasMatch(v)) {
                                 return 'Password must contain at least one uppercase letter';
                               }
-                              if (!RegExp(r'(?=.*[!@#\$%^&*(),.?":{}|<>])').hasMatch(v)) {
+                              if (!RegExp(r'(?=.*[!@#\$%^&*(),.?":{}|<>])')
+                                  .hasMatch(v)) {
                                 return 'Password must contain at least one special character';
                               }
-                                return null;
+                              return null;
                             },
                           ),
                           const SizedBox(height: 20),
-
-                          // Confirm Password
                           _label('Confirm Password'),
                           const SizedBox(height: 8),
                           _textField(
@@ -335,62 +345,67 @@ class _SignupPageState extends State<SignupPage> {
                           ),
                           const SizedBox(height: 20),
 
-                          // Date of Birth & Gender
+                          // ✅ تاريخ الميلاد الجديد بنفس ستايل الـ login
                           if (_role == 'Player') ...[
                             _label('Date of Birth'),
                             const SizedBox(height: 8),
                             GestureDetector(
                               onTap: _selectBirthDate,
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 14, horizontal: 16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: Text(
-                                  _birthDate == null
-                                      ? 'Select your date of birth'
-                                      : DateFormat('yyyy-MM-dd')
-                                          .format(_birthDate!),
-                                  style: const TextStyle(
-                                      color: Colors.black87, fontSize: 14),
+                              child: AbsorbPointer(
+                                child: _textField(
+                                  controller: TextEditingController(
+                                    text: _birthDate == null
+                                        ? ''
+                                        : DateFormat('yyyy-MM-dd')
+                                            .format(_birthDate!),
+                                  ),
+                                  hint: 'Select your date of birth',
+                                  validator: (v) {
+                                    if (_birthDate == null) {
+                                      return 'Date of birth is required';
+                                    }
+                                    return null;
+                                  },
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            if (_birthDateError != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6, left: 10),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _birthDateError!,
+                                  style: const TextStyle(color: Colors.red, fontSize: 13),
+                                ),
+                              ),
+                           ),
 
+
+                            const SizedBox(height: 20),
                             _label('Gender'),
                             const SizedBox(height: 8),
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(30),
+                            DropdownButtonFormField<String>(
+                              value: _gender,
+                              hint: const Text(
+                                'Select your gender',
+                                style: TextStyle(color: Colors.black54),
                               ),
-                              child: DropdownButtonFormField<String>(
-                                value: _gender,
-                                hint: const Text('Select',
-                                    style: TextStyle(color: Colors.black54)),
-                                decoration:
-                                    const InputDecoration(border: InputBorder.none),
-                                items: const [
-                                  DropdownMenuItem(
-                                      value: 'Male', child: Text('Male')),
-                                  DropdownMenuItem(
-                                      value: 'Female', child: Text('Female')),
-                                ],
-                                onChanged: (value) =>
-                                    setState(() => _gender = value),
-                                validator: (v) {
-                                  if (v == null) {
-                                    return 'Please select your gender';
-                                  }
-                                  return null;
-                                },
-                              ),
+                              decoration: _fieldDecoration(''),
+                              items: const [
+                                DropdownMenuItem(
+                                    value: 'Male', child: Text('Male')),
+                                DropdownMenuItem(
+                                    value: 'Female', child: Text('Female')),
+                              ],
+                              onChanged: (value) =>
+                                  setState(() => _gender = value),
+                              validator: (v) {
+                                if (v == null) {
+                                  return 'Gender is required';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 30),
                           ],

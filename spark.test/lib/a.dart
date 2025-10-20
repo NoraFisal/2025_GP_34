@@ -1,3 +1,4 @@
+//new
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -33,7 +34,8 @@ class _APageState extends State<APage> {
         final firestore = FirebaseFirestore.instance;
 
         final playerDoc = await firestore.collection('Player').doc(uid).get();
-        final organizerDoc = await firestore.collection('Organizer').doc(uid).get();
+        final organizerDoc =
+            await firestore.collection('Organizer').doc(uid).get();
 
         if (playerDoc.exists) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -53,7 +55,8 @@ class _APageState extends State<APage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Your email is not verified yet. Please check your inbox.'),
+            content: Text(
+                'Your email is not verified yet. Please check your inbox.'),
           ),
         );
       }
@@ -74,21 +77,16 @@ class _APageState extends State<APage> {
     return Scaffold(
       body: Stack(
         children: [
-          // 🔹 الخلفية
+          // 📸 خلفية متناسقة
           Image.asset(
             'assets/images/Background.png',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
           ),
+          Container(color: Colors.black.withOpacity(0.35)),
 
-          // 🔹 طبقة شفافية فقط للتأثير (لا تمنع الضغط)
-          IgnorePointer(
-            ignoring: true,
-            child: Container(color: Colors.black.withOpacity(0.35)),
-          ),
-
-          // 🔹 المحتوى الأساسي
+          // ✅ المحتوى الأساسي
           SafeArea(
             child: ListView(
               padding: const EdgeInsets.all(24.0),
@@ -109,15 +107,15 @@ class _APageState extends State<APage> {
                 Center(
                   child: user != null
                       ? Container(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 30, 36, 43),
-                            borderRadius: BorderRadius.circular(20),
+                            color: const Color.fromARGB(220, 30, 36, 43),
+                            borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.white.withOpacity(0.5),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
+                                color: Colors.white.withOpacity(0.45),
+                                blurRadius: 18,
+                                offset: const Offset(0, 6),
                               ),
                             ],
                           ),
@@ -125,7 +123,7 @@ class _APageState extends State<APage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                "Welcome, ${user.email}",
+                                "Welcome, ${user.displayName ?? user.email}",
                                 style: const TextStyle(
                                   fontSize: 22,
                                   color: Colors.white,
@@ -143,48 +141,89 @@ class _APageState extends State<APage> {
                                         color: Colors.green,
                                       ),
                                     )
-                                  : const Text(
-                                      "Please verify your email.",
+                                  :  Text(
+                                      "Please verify your email: ${user.email}",
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 18,
                                         color: Colors.white,
                                       ),
                                     ),
 
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 24),
 
-                              MaterialButton(
-                                textColor: Colors.white,
-                                color: accentColor,
-                                onPressed: () async {
-                                  await user.sendEmailVerification();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text('Verification email sent!')),
-                                  );
-                                },
-                                child: const Text("Click to Send Verification Email"),
+                              // 🔹 زر إرسال التحقق
+                              SizedBox(
+                                width: double.infinity,
+                                height: 46,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: accentColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    elevation: 10,
+                                    shadowColor:
+                                        Colors.black.withOpacity(0.6),
+                                  ),
+                                  onPressed: () async {
+                                    await user.sendEmailVerification();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Verification email sent!')),
+                                    );
+                                  },
+                                  child: const Text(
+                                    "Click to Send Verification Email",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
                               ),
-                              const SizedBox(height: 10),
 
-                              MaterialButton(
-                                textColor: Colors.white,
-                                color: Colors.green,
-                                onPressed: _loading
-                                    ? null
-                                    : () async {
-                                        await _handleContinue(context);
-                                      },
-                                child: _loading
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
+                              const SizedBox(height: 16),
+
+                              // 🔹 زر الاستمرار
+                              SizedBox(
+                                width: double.infinity,
+                                height: 46,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    elevation: 10,
+                                    shadowColor:
+                                        Colors.black.withOpacity(0.6),
+                                  ),
+                                  onPressed: _loading
+                                      ? null
+                                      : () async {
+                                          await _handleContinue(context);
+                                        },
+                                  child: _loading
+                                      ? const SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Text(
+                                          "Continue",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
-                                      )
-                                    : const Text("Continue"),
+                                ),
                               ),
                             ],
                           ),
@@ -198,12 +237,12 @@ class _APageState extends State<APage> {
             ),
           ),
 
-          // 🔹 الشعار
+          // 🔹 الشعار أعلى يسار (مثل صفحة اللوق إن)
           Positioned(
             top: 0,
-            right: 0,
+            left: 0,
             child: SafeArea(
-              minimum: const EdgeInsets.only(top: 0, right: 4),
+              minimum: const EdgeInsets.only(top: 0, left: 4),
               child: const CircleAvatar(
                 radius: 40,
                 backgroundImage: AssetImage('assets/images/logo.png'),
@@ -212,7 +251,7 @@ class _APageState extends State<APage> {
             ),
           ),
 
-          // 🔹 زر الرجوع (في الأعلى دوماً)
+          // 🔹 السهم (يبقى كما هو ومكانه الأعلى اليسار)
           Positioned(
             top: 40,
             left: 16,
@@ -222,7 +261,8 @@ class _APageState extends State<APage> {
                 onTap: () {
                   Navigator.pushReplacementNamed(context, '/signup');
                 },
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                child:
+                    const Icon(Icons.arrow_back, color: Colors.white, size: 30),
               ),
             ),
           ),
