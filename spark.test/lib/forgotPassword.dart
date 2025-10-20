@@ -1,5 +1,7 @@
+//new
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -14,36 +16,62 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   bool _loading = false;
 
   Future<void> _handleSendResetEmail() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _loading = true);
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(
-        email: _emailCtrl.text.trim(),
-      );
+  setState(() => _loading = true);
 
+  try {
+    final email = _emailCtrl.text.trim();
+
+    // 🔍 Check if the email exists in either Player or Organizer collections
+    final playerSnapshot = await FirebaseFirestore.instance
+        .collection('Player')
+        .where('Email', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    final organizerSnapshot = await FirebaseFirestore.instance
+        .collection('Organizer')
+        .where('Email', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    // ✅ Determine if the email exists in any of the two collections
+    final emailExists =
+        playerSnapshot.docs.isNotEmpty || organizerSnapshot.docs.isNotEmpty;
+
+    if (!emailExists) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'A password reset email has been sent. Please check your inbox.',
+            'No account found with this email ❌',
           ),
         ),
       );
-    } on FirebaseAuthException catch (e) {
-      String msg = 'Error occurred';
-      if (e.code == 'user-not-found') msg = 'Account not found';
-      if (e.code == 'invalid-email') msg = 'Invalid email address';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unexpected error: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      setState(() => _loading = false);
+      return;
     }
+
+    // ✅ If the email exists, send the password reset email
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'A password reset email has been sent to your inbox ✅',
+        ),
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Unexpected error: $e')),
+    );
+  } finally {
+    if (mounted) setState(() => _loading = false);
   }
+}
 
   @override
   void dispose() {
