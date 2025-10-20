@@ -77,15 +77,23 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     } on FirebaseAuthException catch (e) {
-      String msg = 'Login failed';
-      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
-        msg = 'Account not found';
-      } else if (e.code == 'wrong-password') {
-        msg = 'Incorrect password';
-      } else if (e.code == 'invalid-email') {
-        msg = 'Invalid email address';
-      }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      String msg = 'The email or password is incorrect';
+
+  // Handle common auth-related errors with one general message
+  if (e.code == 'user-not-found' ||
+      e.code == 'wrong-password' ||
+      e.code == 'invalid-email' ||
+      e.code == 'invalid-credential') {
+    msg = 'The email or password is incorrect';
+  } else {
+    // General catch for other issues (e.g., network, etc.)
+    msg = 'An unexpected error occurred. Please try again later.';
+  }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(msg)),
+  );
+      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Unexpected error: $e')),
