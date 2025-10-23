@@ -1,4 +1,4 @@
-//new
+//new2
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -85,6 +85,19 @@ class _APageState extends State<APage> {
             height: double.infinity,
           ),
           Container(color: Colors.black.withOpacity(0.35)),
+
+          Positioned(
+            top: 0,
+            right: 0,
+            child: SafeArea(
+              minimum: const EdgeInsets.only(top: 0, right: 4),
+              child: const CircleAvatar(
+                radius: 40,
+                backgroundImage: AssetImage('assets/images/logo.jpeg'),
+                backgroundColor: Colors.transparent,
+              ),
+            ),
+          ),
 
           // ✅ المحتوى الأساسي
           SafeArea(
