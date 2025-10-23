@@ -113,7 +113,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               minimum: const EdgeInsets.only(top: 0, right: 4),
               child: const CircleAvatar(
                 radius: 40,
-                backgroundImage: AssetImage('assets/images/logo.png'),
+                backgroundImage: AssetImage('assets/images/logo.jpeg'),
                 backgroundColor: Colors.transparent,
               ),
             ),
