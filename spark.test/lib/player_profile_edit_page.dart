@@ -1,6 +1,5 @@
-// lib/player_profile_edit_page.dart
 import 'dart:typed_data';
-import 'dart:convert';
+import 'dart:convert'; 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
@@ -29,12 +28,16 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
   final Set<String> _games = {};
 
   // الصور
-  String? _assetFallback;         // لو عندك asset قديم
-  String _currentPhotoB64 = '';   // الموجود في الداتابيس
+  String _currentPhotoB64 = '';   // موجود في الداتابيس (ProfilePhoto)
   Uint8List? _pickedBytes;        // معاينة جديدة
 
   bool _loading = true;
   bool _saving = false;
+
+  // NEW: visibility toggles (passed back to profile page; NOT saved to DB)
+  bool _showAge = true;
+  bool _showCity = true;
+  bool _showGender = true;
 
   @override
   void initState() {
@@ -49,10 +52,9 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
       _nameCtrl.text = me.username;
       _cityCtrl.text = me.city;
       _games..clear()..addAll(me.games);
-
-      _assetFallback = me.photoLocal;
-      _currentPhotoB64 = me.photoBase64;
-      // لو عندك تاريخ ميلاد محفوظ كنص، قد تحتاجي تفكيكه وتعبئته هنا
+     _currentPhotoB64 = me.profilePhoto ?? '';
+      // reasonable defaults when opening editor
+      _showCity = me.city.trim().isNotEmpty;
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -116,14 +118,14 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
       final picker = ImagePicker();
       final XFile? file = await picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 512, // تقليل الحجم لضمان بقاء الوثيقة < 1MB
-        imageQuality: 85, // (على الويب قد تُتجاهل)
+        maxWidth: 512,
+        imageQuality: 85,
       );
       if (file == null) return;
 
       final bytes = await file.readAsBytes();
       setState(() {
-        _pickedBytes = bytes; // معاينة
+        _pickedBytes = bytes;
       });
     } catch (e) {
       if (!mounted) return;
@@ -146,24 +148,27 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     try {
       final computedAge = _dob != null ? _calcAge(_dob!) : 18;
 
-      String photoB64ToSave = _currentPhotoB64;
+                String photoB64ToSave = _currentPhotoB64;
+          if (_pickedBytes != null) {
+            photoB64ToSave = base64Encode(_pickedBytes!); // revert to base64 saving
+          }
 
-      // لو فيه صورة جديدة، نحولها Base64 ونحفظها
-      if (_pickedBytes != null) {
-        photoB64ToSave = base64Encode(_pickedBytes!);
-      }
+          await PlayerService.updateMe(
+            username: _nameCtrl.text.trim(),
+            age: computedAge,
+            city: _cityCtrl.text.trim(),
+            games: _games.toList(),
+            profilePhoto: photoB64ToSave,
+          );
 
-      await PlayerService.updateMe(
-        username: _nameCtrl.text.trim(),
-        age: computedAge,
-        city: _cityCtrl.text.trim(),
-        games: _games.toList(),
-        photoLocal: _assetFallback,
-        photoBase64: photoB64ToSave,
-      );
 
       if (!mounted) return;
-      Navigator.pop(context); // رجوع لصفحة البلير
+      // Return visibility choices to the profile page (no DB changes)
+      Navigator.pop(context, {
+        'showAge': _showAge,
+        'showCity': _showCity,
+        'showGender': _showGender,
+      });
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -176,6 +181,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     }
     return BgScaffold(
       appBar: AppBar(
+        centerTitle: true, // CENTERED TITLE (requested)
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -245,10 +251,10 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _label('Name'),
-                _field(_nameCtrl, maxLen: 24),
+                _field(_nameCtrl, maxLen: 24), // Name required (default validator)
 
                 _label('City'),
-                _field(_cityCtrl),
+                _field(_cityCtrl, validator: (v) => null), // City OPTIONAL
 
                 _label('Birth date (dd/mm/yyyy)'),
                 GestureDetector(
@@ -260,6 +266,27 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
                       validator: (v) => null,
                     ),
                   ),
+                ),
+
+                const SizedBox(height: 8),
+                // NEW: visibility toggles (only UI; not stored in DB)
+                SwitchListTile.adaptive(
+                  value: _showAge,
+                  onChanged: _saving ? null : (v) => setState(() => _showAge = v),
+                  title: const Text('Show Age ', style: TextStyle(color: Colors.white)),
+                  activeColor: AppColors.accent,
+                ),
+                SwitchListTile.adaptive(
+                  value: _showCity,
+                  onChanged: _saving ? null : (v) => setState(() => _showCity = v),
+                  title: const Text('Show City ', style: TextStyle(color: Colors.white)),
+                  activeColor: AppColors.accent,
+                ),
+                SwitchListTile.adaptive(
+                  value: _showGender,
+                  onChanged: _saving ? null : (v) => setState(() => _showGender = v),
+                  title: const Text('Show Gender ', style: TextStyle(color: Colors.white)),
+                  activeColor: AppColors.accent,
                 ),
 
                 const SizedBox(height: 12),
@@ -323,28 +350,23 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     );
   }
 
-  // أولوية العرض: المختارة -> Base64 -> الأصول -> أيقونة
   Widget _buildAvatarPreview() {
-    if (_pickedBytes != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Image.memory(_pickedBytes!, fit: BoxFit.cover),
-      );
-    }
-    if (_currentPhotoB64.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Image.memory(base64Decode(_currentPhotoB64), fit: BoxFit.cover),
-      );
-    }
-    if (_assetFallback != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Image.asset(_assetFallback!, fit: BoxFit.cover),
-      );
-    }
-    return const Icon(Icons.person, color: Colors.black45, size: 56);
+  if (_pickedBytes != null) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: Image.memory(_pickedBytes!, fit: BoxFit.cover),
+    );
   }
+  if (_currentPhotoB64.isNotEmpty) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: Image.memory(base64Decode(_currentPhotoB64), fit: BoxFit.cover),
+    );
+  }
+  return const Icon(Icons.person, color: Colors.black45, size: 56);
+}
+
+
 
   // Game checkbox
   Widget _gameTile(String name) {
@@ -369,7 +391,6 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
 
   Widget _divider() => const Divider(height: 0, color: Colors.white24);
 
-  // حقل نص بنفس ستايل الأورقنايزر
   Widget _field(
     TextEditingController c, {
     bool isNumber = false,
