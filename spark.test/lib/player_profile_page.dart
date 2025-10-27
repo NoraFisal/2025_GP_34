@@ -1,13 +1,23 @@
-// … imports الموجودة عندك …
-import 'dart:convert';
+import 'dart:convert'; 
 import 'package:flutter/material.dart';
 import 'ui/bg_scaffold.dart';
 import 'ui/side_nav.dart';
 import 'ui/theme.dart';
 import 'data/player_service.dart';
 
-class PlayerProfilePage extends StatelessWidget {
+
+class PlayerProfilePage extends StatefulWidget {
   const PlayerProfilePage({super.key});
+
+  @override
+  State<PlayerProfilePage> createState() => _PlayerProfilePageState();
+}
+
+class _PlayerProfilePageState extends State<PlayerProfilePage> {
+  // Visibility chosen in Edit page; defaults
+  bool _showAge = true;
+  bool _showCity = true;
+  bool _showGender = true;
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +30,24 @@ class PlayerProfilePage extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
           onPressed: () {
-  Navigator.pushNamedAndRemoveUntil(context, '/homepage', (route) => false);
-},
-
+            Navigator.pushNamedAndRemoveUntil(context, '/homepage', (route) => false);
+          },
         ),
         title: const Text('Player Profile', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         actions: [
           IconButton(icon: const Icon(Icons.chat_bubble_outline, color: Colors.white), onPressed: () {}),
           const SizedBox(width: 6),
-          _glowRectButton('Edit', onTap: () => Navigator.pushNamed(context, '/playerEdit')),
+          // Capture visibility toggles from edit page (no DB change)
+          _glowRectButton('Edit', onTap: () async {
+            final res = await Navigator.pushNamed(context, '/playerEdit');
+            if (res is Map) {
+              setState(() {
+                _showAge = res['showAge'] ?? _showAge;
+                _showCity = res['showCity'] ?? _showCity;
+                _showGender = res['showGender'] ?? _showGender;
+              });
+            }
+          }),
           const SizedBox(width: 12),
         ],
       ),
@@ -46,10 +65,25 @@ class PlayerProfilePage extends StatelessWidget {
               }
               final gamesText = u.games.join(', ');
 
+              // Build info rows with requested rules
+              final infoRows = <Widget>[
+                if (_showAge) _kv('Age', '${u.age}'),
+                if (_showCity && u.city.trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  _kv('City', u.city.trim()),
+                ],
+                if (_showGender && u.gender.trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  _kv('Gender', u.gender.trim()),
+                ],
+                if (gamesText.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  _kv('Games', gamesText),
+                ],
+              ];
+
               return Center(
-                
                 child: ConstrainedBox(
-                  
                   constraints: const BoxConstraints(maxWidth: 420),
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -61,10 +95,10 @@ class PlayerProfilePage extends StatelessWidget {
                             CircleAvatar(
                               radius: 42,
                               backgroundColor: AppColors.card,
-                              backgroundImage: (u.photoBase64.isNotEmpty)
-                                  ? MemoryImage(base64Decode(u.photoBase64))
-                                  : null,
-                              child: (u.photoBase64.isEmpty)
+                              backgroundImage: (u.profilePhoto.isNotEmpty)
+                              ? MemoryImage(base64Decode(u.profilePhoto))
+                              : null,
+                              child: (u.profilePhoto.isEmpty)
                                   ? const Icon(Icons.person, size: 42, color: Colors.white70)
                                   : null,
                             ),
@@ -78,7 +112,18 @@ class PlayerProfilePage extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 14),
-                      _infoPanel(age: '${u.age}', city: u.city, gender: u.gender, games: gamesText),
+                      Card(
+                        color: AppColors.cardDeep,
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: infoRows.isEmpty
+                                ? [const Text('No profile details yet', style: TextStyle(color: Colors.white70))]
+                                : infoRows,
+                          ),
+                        ),
+                      ),
 
                       const SizedBox(height: 14),
                       const Text('Suggestions', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
@@ -94,13 +139,20 @@ class PlayerProfilePage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
+                      // Empty blocks instead of images (requested)
                       Row(
-                        children: const [
-                          _Badge('assets/badges/badge_1.png'),
-                          _Badge('assets/badges/badge_2.png'),
-                          _Badge('assets/badges/badge_3.png'),
-                          _Badge('assets/badges/badge_4.png'),
-                        ],
+                        children: List.generate(
+                          4,
+                          (i) => Container(
+                            margin: EdgeInsets.only(right: i == 3 ? 0 : 10),
+                            height: 56,
+                            width: 76,
+                            decoration: BoxDecoration(
+                              color: AppColors.pill,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ),
                       ),
 
                       const SizedBox(height: 16),
@@ -189,7 +241,7 @@ class PlayerProfilePage extends StatelessWidget {
     );
   }
 
-  // باقي الميثودز عندك نفسها، بس تأكد الألوان نصوصها بيضاء:
+  // باقي الميثودز عندك نفسها
   static Widget _roundedTiles(int count) => Row(
         children: List.generate(
           count,
@@ -204,28 +256,6 @@ class PlayerProfilePage extends StatelessWidget {
           ),
         ),
       );
-
-  static Widget _infoPanel({required String age, required String city, required String gender, required String games}) {
-    return Card(
-      color: AppColors.cardDeep,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _kv('Age', age),
-            const SizedBox(height: 6),
-            _kv('City', city),
-            const SizedBox(height: 6),
-            _kv('Gender',gender),
-            const SizedBox(height: 6),
-            _kv('Games', games),
-            
-          ],
-        ),
-      ),
-    );
-  }
 
   static Widget _kv(String k, String v) => RichText(
         text: TextSpan(
@@ -285,20 +315,6 @@ class PlayerProfilePage extends StatelessWidget {
   }
 }
 
-class _Badge extends StatelessWidget {
-  final String path;
-  const _Badge(this.path);
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(right: 10),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
-      child: Image.asset(path, width: 32, height: 32, fit: BoxFit.contain),
-    );
-  }
-}
-
 class _TeamAvatars extends StatelessWidget {
   const _TeamAvatars();
   @override
@@ -313,5 +329,4 @@ class _TeamAvatars extends StatelessWidget {
       ),
     );
   }
-  
 }
