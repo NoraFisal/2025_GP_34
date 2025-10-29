@@ -95,15 +95,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ),
           Container(color: Colors.black.withOpacity(0.35)),
 
-          // زر الرجوع في الأعلى اليسار
-          Positioned(
-            top: 40,
-            left: 16,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
+         
 
           // شعار التطبيق في الأعلى اليمين (مثل صفحة اللوق ان)
           Positioned(
@@ -190,6 +182,26 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
             ),
           ),
+
+                    // ✅ السهم الجديد مثبت بالأعلى وقابل للّمس دائمًا
+Positioned(
+  top: 0,
+  left: 16,
+  child: SafeArea(
+    child: Material(
+      color: Colors.transparent, // لتفعيل التفاعل الكامل
+      child: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: Colors.white,
+          size: 26,
+        ),
+        onPressed: () => Navigator.pop(context),
+      ),
+    ),
+  ),
+),
+   
         ],
       ),
     );

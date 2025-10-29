@@ -192,14 +192,7 @@ class _SignupPageState extends State<SignupPage> {
               ),
             ),
           ),
-          Positioned(
-            top: 40,
-            left: 16,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
+          
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -248,7 +241,7 @@ class _SignupPageState extends State<SignupPage> {
                           const SizedBox(height: 8),
                           _textField(
                             controller: _fullNameController,
-                            hint: 'Enter your full name',
+                            hint: 'Enter your name',
                             validator: (v) {
                               if (v == null || v.isEmpty) {
                                 return 'Full name is required';
@@ -424,6 +417,25 @@ class _SignupPageState extends State<SignupPage> {
               ),
             ),
           ),
+
+          // ✅ السهم الجديد مثبت بالأعلى وقابل للّمس دائمًا
+Positioned(
+  top: 0,
+  left: 16,
+  child: SafeArea(
+    child: Material(
+      color: Colors.transparent, // لتفعيل التفاعل الكامل
+      child: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: Colors.white,
+          size: 26,
+        ),
+        onPressed: () => Navigator.pop(context),
+      ),
+    ),
+  ),
+),
         ],
       ),
     );

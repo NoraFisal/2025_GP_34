@@ -49,14 +49,15 @@ class _APageState extends State<APage> {
           Navigator.pushReplacementNamed(context, '/organizerProfile');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User role not found. Contact support.')),
+            const SnackBar(
+                content: Text('User role not found. Contact support.')),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-                'Your email is not verified yet. Please check your inbox.'),
+            content:
+                Text('Your email is not verified yet. Please check your inbox.'),
           ),
         );
       }
@@ -77,7 +78,7 @@ class _APageState extends State<APage> {
     return Scaffold(
       body: Stack(
         children: [
-          // 📸 خلفية متناسقة
+          // 📸 Background
           Image.asset(
             'assets/images/Background.png',
             fit: BoxFit.cover,
@@ -86,6 +87,7 @@ class _APageState extends State<APage> {
           ),
           Container(color: Colors.black.withOpacity(0.35)),
 
+          // 🔹 App logo (top-right)
           Positioned(
             top: 0,
             right: 0,
@@ -99,7 +101,7 @@ class _APageState extends State<APage> {
             ),
           ),
 
-          // ✅ المحتوى الأساسي
+          // ✅ Main content
           SafeArea(
             child: ListView(
               padding: const EdgeInsets.all(24.0),
@@ -154,10 +156,10 @@ class _APageState extends State<APage> {
                                         color: Colors.green,
                                       ),
                                     )
-                                  :  Text(
+                                  : Text(
                                       "Please verify your email: ${user.email}",
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 18,
                                         color: Colors.white,
                                       ),
@@ -165,7 +167,7 @@ class _APageState extends State<APage> {
 
                               const SizedBox(height: 24),
 
-                              // 🔹 زر إرسال التحقق
+                              // 🔹 Send verification email button
                               SizedBox(
                                 width: double.infinity,
                                 height: 46,
@@ -200,7 +202,7 @@ class _APageState extends State<APage> {
 
                               const SizedBox(height: 16),
 
-                              // 🔹 زر الاستمرار
+                              // 🔹 Continue button
                               SizedBox(
                                 width: double.infinity,
                                 height: 46,
@@ -250,35 +252,31 @@ class _APageState extends State<APage> {
             ),
           ),
 
-          // 🔹 الشعار أعلى يسار (مثل صفحة اللوق إن)
-          Positioned(
-            top: 0,
-            left: 0,
-            child: SafeArea(
-              minimum: const EdgeInsets.only(top: 0, left: 4),
-              child: const CircleAvatar(
-                radius: 40,
-                backgroundImage: AssetImage('assets/images/logo.png'),
-                backgroundColor: Colors.transparent,
-              ),
-            ),
-          ),
-
-          // 🔹 السهم (يبقى كما هو ومكانه الأعلى اليسار)
-          Positioned(
-            top: 40,
-            left: 16,
-            child: SafeArea(
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  Navigator.pushReplacementNamed(context, '/signup');
-                },
-                child:
-                    const Icon(Icons.arrow_back, color: Colors.white, size: 30),
-              ),
-            ),
-          ),
+          
+          
+          // ✅ سهم منسق ومرتفع للأعلى، بنفس تنسيق صفحة الـ Signup الأخيرة
+Positioned(
+  top: 0, // 🔺 يرفع السهم للأعلى أكثر
+  left: 12,
+  child: SafeArea(
+    minimum: const EdgeInsets.only(top: 0, left: 8),
+    child: Material(
+      color: Colors.transparent,
+      child: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded, // رأس السهم فقط
+          color: Colors.white,
+          size: 26,
+        ),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+        onPressed: () {
+          Navigator.pushReplacementNamed(context, '/signup');
+        },
+      ),
+    ),
+  ),
+),
         ],
       ),
     );
