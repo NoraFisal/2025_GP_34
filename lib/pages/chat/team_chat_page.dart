@@ -7,7 +7,7 @@ import '/ui/components/bg_scaffold.dart';
 import '/ui/components/mini_side_nav.dart';
 import '/ui/theme.dart';
 import '/pages/player/player_profile_view_page.dart';
-import '/pages/team/edit_team_page.dart'; // ✅ لزر إعدادات الفريق
+import '/pages/team/edit_team_page.dart';
 
 class TeamChatPage extends StatefulWidget {
   final String teamId;
@@ -177,10 +177,9 @@ void _handleBackNavigation() async {
 
   if (!mounted) return;
 
-  // ✅ نعيد البناء نظيفًا حتى الهوم بيج فقط
   Navigator.pushNamedAndRemoveUntil(context, '/homepage', (route) => false);
 
-  // ✅ تأخير بسيط لتجنب الوميض (نستخدم Future.microtask بدل delay)
+
   Future.microtask(() {
     if (!mounted) return;
     Navigator.pushNamed(context, '/playerProfile');
@@ -234,7 +233,6 @@ void _handleBackNavigation() async {
     );
   }
 
-/// ✅ رسالة الدعوة بشكل أنيق وواضح بدون إيموجي كثيرة
   Widget _buildInvitationMessage(String text) {
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance
@@ -259,7 +257,7 @@ void _handleBackNavigation() async {
             if (!memberSnap.hasData) return const SizedBox();
             final members = memberSnap.data!.docs;
 
-            // معرفة رد اللاعب الحالي إن وجد
+            
             String myResponse = '';
             if (currentUid != null) {
               final meDoc = members.cast<QueryDocumentSnapshot>().firstWhere(
@@ -284,7 +282,7 @@ void _handleBackNavigation() async {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 👇 عرض معلومات المنشئ
+               
                   FutureBuilder<DocumentSnapshot>(
                     future: FirebaseFirestore.instance
                         .collection('Player')
@@ -306,7 +304,7 @@ void _handleBackNavigation() async {
                   ),
                   const SizedBox(height: 10),
 
-                  // نص الدعوة الأصلي
+          
                   Text(
                     text,
                     style: const TextStyle(
@@ -337,7 +335,7 @@ void _handleBackNavigation() async {
                   ),
                   const SizedBox(height: 6),
 
-                  // 👇 أسماء الأعضاء بدون إيموجي
+      
                   ...members.map((m) {
                     final data = m.data() as Map<String, dynamic>;
                     final role = data['role'] ?? '';
@@ -365,7 +363,7 @@ void _handleBackNavigation() async {
 
                   const SizedBox(height: 15),
 
-                  // 👇 حالة اللاعب الحالي
+                 
                   if (isCreator)
                     const Text(
                       'You are the team creator — waiting for others to respond.',
@@ -520,7 +518,6 @@ void _handleBackNavigation() async {
     );
   }
 
-  // ✅ تم تعديل صف الأفاتارات ليكون في المنتصف
   Widget _buildTeamAvatarsRow() {
     if (_teamMembers.isEmpty) return const SizedBox(height: 60);
 
@@ -619,7 +616,7 @@ void _handleBackNavigation() async {
                     color: Colors.white),
                 onPressed: _handleBackNavigation,
               ),
-              // ✅ زر إعدادات الفريق للانتقال إلى EditTeamPage
+             
               actions: [
                 IconButton(
                   icon: const Icon(Icons.settings, color: Colors.white),
