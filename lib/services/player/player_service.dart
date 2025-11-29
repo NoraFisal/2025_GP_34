@@ -8,7 +8,7 @@ class PlayerData {
   final String city;
   final String gender;
   final List<String> games;
-  final String profilePhoto;  // Base64
+  final String profilePhoto;  
 
   PlayerData({
     required this.uid,
@@ -28,7 +28,7 @@ class PlayerData {
       city: (m['City'] ?? '') as String,
       gender: (m['Gender'] ?? '') as String,
       games: m['Game'] is Iterable ? List<String>.from(m['Game']) : const <String>[],
-      profilePhoto: (m['ProfilePhoto'] ?? '') as String, // Base64
+      profilePhoto: (m['ProfilePhoto'] ?? '') as String, 
     );
   }
 
@@ -89,7 +89,7 @@ class PlayerService {
     required int age,
     required String city,
     required List<String> games,
-    String? profilePhoto, // Base64
+    String? profilePhoto, 
   }) async {
     final update = {
       'Name': username,
@@ -105,7 +105,7 @@ class PlayerService {
   final teamsRef = FirebaseFirestore.instance.collection('Team');
 
   return teamsRef
-      .where('status', isEqualTo: 'Accepted')  // ✅ نفلتر هنا مباشرة
+      .where('status', isEqualTo: 'Accepted')  
       .snapshots()
       .asyncMap((query) async {
     List<Map<String, dynamic>> myTeams = [];
@@ -113,16 +113,16 @@ class PlayerService {
     for (var doc in query.docs) {
       final data = doc.data();
 
-      // نتحقق: هل اللاعب عضو في هذا الفريق؟
+    
       final memberDoc = await teamsRef
           .doc(doc.id)
           .collection('Members')
           .doc(userId)
           .get();
 
-      if (!memberDoc.exists) continue; // إذا مو عضو → تجاهل
+      if (!memberDoc.exists) continue; 
 
-      // جلب جميع الأعضاء
+      
       final membersSnap = await teamsRef
           .doc(doc.id)
           .collection('Members')
