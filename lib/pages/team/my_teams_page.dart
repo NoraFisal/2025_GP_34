@@ -18,7 +18,7 @@ class MyTeamsPage extends StatefulWidget {
 class _MyTeamsPageState extends State<MyTeamsPage> {
   final currentUser = FirebaseAuth.instance.currentUser;
 
-  /// Fetch all teams where current user is a member with Accepted status
+  
   Stream<List<Map<String, dynamic>>> _getMyTeams() {
     if (currentUser == null) return Stream.value([]);
 
@@ -33,7 +33,7 @@ class _MyTeamsPageState extends State<MyTeamsPage> {
         final teamId = teamDoc.id;
         final teamData = teamDoc.data();
 
-        // Check if current user is a member with Accepted response
+
         final memberDoc = await FirebaseFirestore.instance
             .collection('Team')
             .doc(teamId)
@@ -58,7 +58,7 @@ class _MyTeamsPageState extends State<MyTeamsPage> {
         }
       }
 
-      // Sort by creation date (newest first)
+ 
       teams.sort((a, b) {
         final aTime = (a['createdAt'] as Timestamp?)?.toDate() ?? DateTime(2000);
         final bTime = (b['createdAt'] as Timestamp?)?.toDate() ?? DateTime(2000);
@@ -69,11 +69,11 @@ class _MyTeamsPageState extends State<MyTeamsPage> {
     });
   }
 
-  void _navigateToTeamDetails(String teamId, String teamName) {  // ✅ غيّر الاسم
+  void _navigateToTeamDetails(String teamId, String teamName) {  
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => TeamDetailsPage(  // ✅ غيّر الصفحة
+        builder: (_) => TeamDetailsPage(  
           teamId: teamId,
           teamName: teamName,
         ),
@@ -199,12 +199,12 @@ class _MyTeamsPageState extends State<MyTeamsPage> {
       try {
         logoImage = MemoryImage(base64Decode(logo));
       } catch (_) {
-        // If decode fails, ignore
+     
       }
     }
 
     return InkWell(
-      onTap: () => _navigateToTeamDetails(team['id'], team['name']),  // ✅ استخدم الدالة الجديدة
+      onTap: () => _navigateToTeamDetails(team['id'], team['name']),  
       borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.all(14),
@@ -215,7 +215,7 @@ class _MyTeamsPageState extends State<MyTeamsPage> {
         ),
         child: Row(
           children: [
-            // Team Logo
+            
             Container(
               width: 60,
               height: 60,
@@ -239,7 +239,7 @@ class _MyTeamsPageState extends State<MyTeamsPage> {
             ),
             const SizedBox(width: 14),
 
-            // Team Info
+       
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,7 +302,7 @@ class _MyTeamsPageState extends State<MyTeamsPage> {
               ),
             ),
 
-            // Arrow Icon
+    
             const Icon(
               Icons.arrow_forward_ios_rounded,
               color: Colors.white54,
