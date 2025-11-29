@@ -1,4 +1,4 @@
-//new
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,7 +23,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   try {
     final email = _emailCtrl.text.trim();
 
-    // 🔍 Check if the email exists in either Player or Organizer collections
+
     final playerSnapshot = await FirebaseFirestore.instance
         .collection('Player')
         .where('Email', isEqualTo: email)
@@ -36,7 +36,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         .limit(1)
         .get();
 
-    // ✅ Determine if the email exists in any of the two collections
     final emailExists =
         playerSnapshot.docs.isNotEmpty || organizerSnapshot.docs.isNotEmpty;
 
@@ -53,7 +52,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       return;
     }
 
-    // ✅ If the email exists, send the password reset email
     await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
 
     if (!mounted) return;
@@ -109,7 +107,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             ),
           ),
 
-          // المحتوى الرئيسي
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -132,7 +129,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ),
                           const SizedBox(height: 30),
 
-                          // عنوان الحقل
+                         
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
