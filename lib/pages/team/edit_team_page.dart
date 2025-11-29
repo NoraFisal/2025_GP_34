@@ -1,4 +1,4 @@
-// lib/pages/team/edit_team_page.dart
+
 
 import 'dart:convert';
 import 'dart:typed_data';
@@ -248,7 +248,7 @@ class _EditTeamPageState extends State<EditTeamPage> {
             ),
           ),
 
-          /// ⭐ Add MiniSideNav HERE
+  
           Positioned(
             left: 0,
             top: kToolbarHeight + 20,
