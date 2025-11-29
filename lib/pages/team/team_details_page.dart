@@ -39,8 +39,7 @@ class TeamDetailsPage extends StatelessWidget {
     for (final memberDoc in membersSnapshot.docs) {
       final memberData = memberDoc.data();
       final uid = memberDoc.id;
-      
-      // Get player info
+  
       final playerDoc = await FirebaseFirestore.instance
           .collection('Player')
           .doc(uid)
@@ -58,7 +57,6 @@ class TeamDetailsPage extends StatelessWidget {
       }
     }
 
-    // Sort members by role order
     const roleOrder = ['top', 'jungle', 'middle', 'bottom', 'support'];
     members.sort((a, b) {
       final aIndex = roleOrder.indexOf(a['role'].toString().toLowerCase());
@@ -174,7 +172,7 @@ class TeamDetailsPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              // Team Logo
+             
               Container(
                 width: 80,
                 height: 80,
@@ -198,7 +196,7 @@ class TeamDetailsPage extends StatelessWidget {
               ),
               const SizedBox(width: 16),
 
-              // Team Name & Status
+              
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,12 +247,11 @@ class TeamDetailsPage extends StatelessWidget {
                 ),
               ),
 
-              // Win Rate Ring
+          
               _buildWinRateRing(winRate),
             ],
           ),
 
-          // Description
           if (description.isNotEmpty) ...[
             const SizedBox(height: 16),
             Container(
@@ -368,7 +365,7 @@ class TeamDetailsPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          // Player Photo
+          
           CircleAvatar(
             radius: 24,
             backgroundColor: Colors.white.withOpacity(.12),
@@ -379,7 +376,7 @@ class TeamDetailsPage extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // Player Name
+         
           Expanded(
             child: Text(
               member['name'],
@@ -390,7 +387,7 @@ class TeamDetailsPage extends StatelessWidget {
             ),
           ),
 
-          // Role Badge
+          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
