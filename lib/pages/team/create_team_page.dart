@@ -1,4 +1,4 @@
-// lib/ui/create_team_page.dart
+
 import 'dart:typed_data';
 import 'dart:convert';
 
@@ -25,7 +25,7 @@ class _CreateTeamPageState extends State<CreateTeamPage>
   final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
 
-  /// First slot is always the current user; then you can add up to 4 more.
+  
   final _picked = <PickedPlayer>[];
   Uint8List? _logoBytes;
 
@@ -72,7 +72,6 @@ class _CreateTeamPageState extends State<CreateTeamPage>
     super.dispose();
   }
 
-  // ===== Exit confirmation dialog =====
   Future<bool> _onWillPop() async {
     final shouldPop = await showDialog<bool>(
       context: context,
@@ -208,7 +207,7 @@ class _CreateTeamPageState extends State<CreateTeamPage>
     return shouldPop ?? false;
   }
 
-  // ===== Image picker (web & mobile) =====
+
   Future<void> _pickLogo() async {
     try {
       final ImagePicker picker = ImagePicker();
@@ -224,7 +223,7 @@ class _CreateTeamPageState extends State<CreateTeamPage>
     }
   }
 
-  // ===== Search players (keep previous selections, avoid loop) =====
+
   Future<void> _openSearch() async {
     final res = await Navigator.push<List<PickedPlayer>>(
       context,
@@ -236,11 +235,11 @@ class _CreateTeamPageState extends State<CreateTeamPage>
       ),
     );
 
-    // user pressed back or nothing selected
+  
     if (!mounted || res == null || res.isEmpty) return;
 
     setState(() {
-      // always keep current user as first slot
+   
       final selfUid = FirebaseAuth.instance.currentUser?.uid;
       if (selfUid != null) {
         final idx = _picked.indexWhere((p) => p.uid == selfUid);
@@ -250,7 +249,7 @@ class _CreateTeamPageState extends State<CreateTeamPage>
         }
       }
 
-      // add new players, but don't remove existing ones, max 5 total
+    
       for (final p in res) {
         final already = _picked.any((x) => x.uid == p.uid);
         if (!already && _picked.length < 5) {
@@ -266,7 +265,7 @@ class _CreateTeamPageState extends State<CreateTeamPage>
       _loading = true;
     });
     try {
-      // team name required before winrate
+  
       if (_nameCtrl.text.trim().isEmpty) {
         _showPopup(
           title: 'Add Team Name',
@@ -284,8 +283,6 @@ class _CreateTeamPageState extends State<CreateTeamPage>
         return;
       }
 
-      // 🔹 ما نستخدم assignments أبدًا هنا
-      // ModelService موجود لو احتجتوه لاحقاً، لكن ResultsPage تحسب كل شيء بنفسها الآن
 
       if (!mounted) return;
       await Navigator.push(
@@ -534,7 +531,7 @@ class _CreateTeamPageState extends State<CreateTeamPage>
     );
   }
 
-  // ---------- Search bar (block when 5 players) ----------
+
   Widget _searchBar(ThemeData t, {required VoidCallback onTap}) {
     return InkWell(
       onTap: () {
@@ -573,7 +570,6 @@ class _CreateTeamPageState extends State<CreateTeamPage>
     );
   }
 
-  // ---------- Avatar helper (URL or base64) ----------
   ImageProvider<Object>? _avatarProvider(String raw) {
     if (raw.isEmpty) return null;
 
@@ -587,7 +583,7 @@ class _CreateTeamPageState extends State<CreateTeamPage>
     }
   }
 
-  // ---------- Team strip with red X ----------
+
   Widget _teamStrip(ThemeData t) {
     final selfUid = FirebaseAuth.instance.currentUser?.uid;
 
