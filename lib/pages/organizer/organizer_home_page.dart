@@ -100,7 +100,7 @@ Future<List<Map<String, dynamic>>> _fetchLatestAcceptedTeams() async {
       final snapshot = await FirebaseFirestore.instance
           .collection('Team')
           .where('status', isEqualTo: 'Accepted')
-          .get(); // no orderBy (no index needed)
+          .get(); 
 
       debugPrint('✅ Found ${snapshot.docs.length} accepted teams');
 
@@ -114,7 +114,6 @@ Future<List<Map<String, dynamic>>> _fetchLatestAcceptedTeams() async {
         };
       }).toList();
 
-      // sort newest first
       teams.sort((a, b) {
         final aTime = a['createdAt'] as Timestamp?;
         final bTime = b['createdAt'] as Timestamp?;
@@ -142,7 +141,7 @@ Future<List<Map<String, dynamic>>> _fetchLatestAcceptedTeams() async {
         ),
         child: Column(
           children: [
-            // نفس AppBar المستخدم في نسخة اللاعب
+      
             AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -252,7 +251,6 @@ Future<List<Map<String, dynamic>>> _fetchLatestAcceptedTeams() async {
     );
   }
 
-  // ---------- SEARCH RESULTS ----------
   Widget buildSearchResults() {
     return Column(
       children: searchResults.map((result) {
@@ -298,7 +296,6 @@ Future<List<Map<String, dynamic>>> _fetchLatestAcceptedTeams() async {
     );
   }
 
-  // ---------- SECTIONS ----------
   Widget buildSection(BuildContext context, String title, Widget content) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -348,7 +345,7 @@ Future<List<Map<String, dynamic>>> _fetchLatestAcceptedTeams() async {
     );
   }
 
-  // Light-up button
+
   static Widget _glowRectButton(String text,
       {required VoidCallback onTap}) {
     return Container(
@@ -383,7 +380,6 @@ Future<List<Map<String, dynamic>>> _fetchLatestAcceptedTeams() async {
     );
   }
 
-  // ---------- DUMMY SECTIONS ----------
   Widget buildPlayersRow() => Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(
