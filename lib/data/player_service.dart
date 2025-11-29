@@ -8,7 +8,7 @@ class PlayerData {
   final String city;
   final String gender;
   final List<String> games;
-  final String profilePhoto;  // Base64
+  final String profilePhoto;  
 
   PlayerData({
     required this.uid,
@@ -28,7 +28,7 @@ class PlayerData {
       city: (m['City'] ?? '') as String,
       gender: (m['Gender'] ?? '') as String,
       games: m['Game'] is Iterable ? List<String>.from(m['Game']) : const <String>[],
-      profilePhoto: (m['ProfilePhoto'] ?? '') as String, // Base64
+      profilePhoto: (m['ProfilePhoto'] ?? '') as String, 
     );
   }
 
@@ -59,7 +59,7 @@ class PlayerService {
         'Age': 18,
         'City': '',
         'Game': <String>[],
-        'ProfilePhoto': '', // Base64
+        'ProfilePhoto': '', 
         'ownerUid': myUid,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -90,7 +90,7 @@ class PlayerService {
     required int age,
     required String city,
     required List<String> games,
-    String? profilePhoto, // Base64
+    String? profilePhoto, 
   }) async {
     final update = {
       'Name': username,
