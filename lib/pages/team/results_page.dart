@@ -1,11 +1,4 @@
-// lib/pages/team/results_page.dart
-//
-// FINAL MERGED VERSION — SPARK Team Winrate V5
-// - Notebook logic 1:1
-// - New Card UI
-// - Status-aware duplicate logic with 3 popups
-// - Sends invitations and goes to TeamChatPage after creation
-// -------------------------------------------------------------
+
 
 import 'dart:typed_data';
 import 'dart:convert';
@@ -23,7 +16,7 @@ import '../../services/team/team_model_v5.dart';
 import '../../services/player/team/team_service.dart';
 import '../chat/team_chat_page.dart';
 
-import '../player/player_profile_page.dart'; // still used elsewhere
+import '../player/player_profile_page.dart'; 
 
 class ResultsPage extends StatefulWidget {
   final List<PickedPlayer> roster;
@@ -58,9 +51,6 @@ class _ResultsPageState extends State<ResultsPage> {
     _loadStats();
   }
 
-  // -------------------------------------------------------------
-  // LOAD PLAYER ROLE STATS FROM FIREBASE
-  // -------------------------------------------------------------
   Future<void> _loadStats() async {
     try {
       for (final p in widget.roster) {
@@ -97,9 +87,7 @@ class _ResultsPageState extends State<ResultsPage> {
     if (mounted) setState(() => _loading = false);
   }
 
-  // -------------------------------------------------------------
-  // COMPUTE TOP 3 COMPOSITIONS
-  // -------------------------------------------------------------
+
   Future<void> computeTop3() async {
     final roles = ['top', 'jungle', 'middle', 'bottom', 'support'];
     final players = widget.roster;
@@ -153,9 +141,6 @@ class _ResultsPageState extends State<ResultsPage> {
     top3 = results.take(3).toList();
   }
 
-  // -------------------------------------------------------------
-  // BUILD UI
-  // -------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
@@ -221,9 +206,6 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  // -------------------------------------------------------------
-  // Animated swipe card
-  // -------------------------------------------------------------
   Widget _animatedCard(
       BuildContext context, Map<String, dynamic> comp, int index) {
     return AnimatedBuilder(
@@ -249,9 +231,7 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  // -------------------------------------------------------------
-  // One composition card
-  // -------------------------------------------------------------
+ 
   Widget _compCard(BuildContext context, Map<String, dynamic> comp) {
     final t = Theme.of(context);
     const roles = ['top', 'jungle', 'middle', 'bottom', 'support'];
@@ -285,7 +265,7 @@ class _ResultsPageState extends State<ResultsPage> {
           ),
           const SizedBox(height: 22),
 
-          // roles list
+        
           Column(
             children: roles.map((r) {
               final uid = comp['map'][r];
@@ -327,7 +307,7 @@ class _ResultsPageState extends State<ResultsPage> {
 
           const SizedBox(height: 22),
 
-          // Select button
+    
           Align(
             alignment: Alignment.centerRight,
             child: Container(
@@ -367,9 +347,7 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  // -------------------------------------------------------------
-  // Winrate circle
-  // -------------------------------------------------------------
+
   Widget _winrateCircle(double wr) {
     wr = wr.clamp(0, 100);
 
@@ -398,9 +376,7 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  // -------------------------------------------------------------
-  // SAVE TEAM TO FIREBASE — 3 POPUP CASES
-  // -------------------------------------------------------------
+
   Future<void> _saveTeamToFirestore(
     BuildContext context,
     Map<String, String> mapping,
@@ -429,7 +405,6 @@ class _ResultsPageState extends State<ResultsPage> {
       return;
     }
 
-    // Build lineupKey from roles + uids
     final sortedEntries = mapping.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
     final lineupKey =
@@ -437,7 +412,7 @@ class _ResultsPageState extends State<ResultsPage> {
 
     final db = FirebaseFirestore.instance;
 
-    // ---------- CHECK EXISTING TEAMS ----------
+
     try {
       final snap = await db
           .collection('Team')
@@ -465,7 +440,7 @@ class _ResultsPageState extends State<ResultsPage> {
         }
       }
 
-      // 1️⃣ Used & ACCEPTED → block with message
+   
       if (hasAcceptedSameWr) {
         if (!context.mounted) return;
         await _showErrorPopup(
@@ -477,13 +452,13 @@ class _ResultsPageState extends State<ResultsPage> {
         return;
       }
 
-      // 2️⃣ Used & PENDING → special confirm
+     
       if (hasPendingSameWr) {
         if (!context.mounted) return;
         final again = await _confirmPendingLineup(context);
         if (!again) return;
       } else {
-        // 3️⃣ Not used with this winrate (new or different WR) → normal "New Lineup" confirm
+        
         if (!context.mounted) return;
         final confirmNew = await _confirmNewLineup(context);
         if (!confirmNew) return;
@@ -498,7 +473,7 @@ class _ResultsPageState extends State<ResultsPage> {
       return;
     }
 
-    // ---------- Logo encoding ----------
+
     String? logoBase64;
     if (widget.logoBytes != null && widget.logoBytes!.isNotEmpty) {
       try {
@@ -506,7 +481,7 @@ class _ResultsPageState extends State<ResultsPage> {
       } catch (_) {}
     }
 
-    // Loading popup
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -516,7 +491,7 @@ class _ResultsPageState extends State<ResultsPage> {
     );
 
     try {
-      // -------- Create team doc --------
+   
       final teamRef = db.collection('Team').doc();
 
       await teamRef.set({
@@ -530,7 +505,7 @@ class _ResultsPageState extends State<ResultsPage> {
         if (logoBase64 != null) 'logoUrl': logoBase64,
       });
 
-      // -------- Add Members --------
+ 
       for (final entry in mapping.entries) {
         await teamRef.collection('Members').doc(entry.value).set({
           'role': entry.key,
@@ -539,7 +514,6 @@ class _ResultsPageState extends State<ResultsPage> {
         });
       }
 
-      // -------- Create TeamChat --------
       await db.collection('TeamChat').doc(teamRef.id).set({
         'teamId': teamRef.id,
         'lastMessage': '🎮 Team invitation sent!',
@@ -547,10 +521,10 @@ class _ResultsPageState extends State<ResultsPage> {
         'status': 'pending',
       });
 
-      // -------- Send invitations --------
+     
       await TeamService.sendTeamInvitations(teamRef.id);
 
-      if (context.mounted) Navigator.pop(context); // close loading
+      if (context.mounted) Navigator.pop(context); 
 
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -564,7 +538,6 @@ class _ResultsPageState extends State<ResultsPage> {
         ),
       );
 
-      // Go directly to Team Chat after creation
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -587,9 +560,7 @@ class _ResultsPageState extends State<ResultsPage> {
     }
   }
 
-  // -------------------------------------------------------------
-  // Helper: return player's name by uid
-  // -------------------------------------------------------------
+
   String _playerName(String uid) {
     final p = widget.roster.firstWhere(
       (x) => x.uid == uid,
@@ -599,9 +570,6 @@ class _ResultsPageState extends State<ResultsPage> {
     return p.name;
   }
 
-  // -------------------------------------------------------------
-  // Generate all permutations (Notebook logic 1:1)
-  // -------------------------------------------------------------
   List<List<PickedPlayer>> _permutePlayers(List<PickedPlayer> players) {
     if (players.length < 5) return [];
 
@@ -631,9 +599,7 @@ class _ResultsPageState extends State<ResultsPage> {
     return results;
   }
 
-  // -------------------------------------------------------------
-  // Error popup
-  // -------------------------------------------------------------
+
   Future<void> _showErrorPopup(
     BuildContext context, {
     required String title,
@@ -689,9 +655,7 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  // -------------------------------------------------------------
-  // Confirm New Lineup popup  (case 2 / orange style)
-  // -------------------------------------------------------------
+  
   Future<bool> _confirmNewLineup(BuildContext context) async {
     final result = await showDialog<bool>(
       context: context,
@@ -765,9 +729,7 @@ class _ResultsPageState extends State<ResultsPage> {
     return result ?? false;
   }
 
-  // -------------------------------------------------------------
-  // Confirm Pending Lineup popup (case 3)
-  // -------------------------------------------------------------
+
   Future<bool> _confirmPendingLineup(BuildContext context) async {
     final result = await showDialog<bool>(
       context: context,
