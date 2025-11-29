@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class TeamService {
-  /// ✅ Fetch all teams where the player is a member (even if invited or rejected)
+
   static Stream<List<Map<String, dynamic>>> getUserTeams() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return const Stream.empty();
@@ -16,20 +16,20 @@ class TeamService {
         final teamId = teamDoc.id;
         final teamData = teamDoc.data();
 
-        // Check if the player is a member of this team
+      
         final memberSnap =
             await teamDoc.reference.collection('Members').doc(uid).get();
 
         if (!memberSnap.exists) continue;
 
-        // Fetch team data
+ 
         final name = teamData['name'] ?? 'Unnamed Team';
         final desc = teamData['description'] ?? '';
         final status = teamData['status'] ?? 'pending';
         final logo = teamData['logoUrl'] ?? '';
         final createdBy = teamData['createdBy'] ?? '';
 
-        // Fetch TeamChat data (if exists)
+   
         final chatSnap = await db.collection('TeamChat').doc(teamId).get();
         final chatData = chatSnap.exists ? chatSnap.data() ?? {} : {};
 
@@ -50,7 +50,7 @@ class TeamService {
     });
   }
 
-  /// ✅ Send a single invitation message for the whole team (not one per member)
+
   static Future<void> sendTeamInvitations(String teamId) async {
     final db = FirebaseFirestore.instance;
     final teamDoc = await db.collection('Team').doc(teamId).get();
@@ -64,7 +64,7 @@ class TeamService {
     final membersSnap =
         await db.collection('Team').doc(teamId).collection('Members').get();
 
-    /// ✅ Create the TeamChat document if it doesn’t exist
+
     final teamChatRef = db.collection('TeamChat').doc(teamId);
     final teamChatSnap = await teamChatRef.get();
 
@@ -77,7 +77,6 @@ class TeamService {
       });
     }
 
-    // ✅ Send only one invitation message (instead of one per player)
     await teamChatRef.collection('TeamMessage').add({
       'senderId': createdBy,
       'contact':
@@ -88,7 +87,7 @@ class TeamService {
     });
   }
 
-  /// ✅ Count the number of unread messages in TeamChat
+
   static Future<int> getUnreadTeamMessagesCount(
       String teamId, String userId) async {
     final db = FirebaseFirestore.instance;
