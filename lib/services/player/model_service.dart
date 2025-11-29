@@ -1,25 +1,10 @@
-// ----------------------------------------------------------
-// lib/services/player/model_service.dart
-// FULL V5 MODEL SERVICE — matches Notebook v5 exactly
-//
-// Provides:
-//  ✔ ensureLoaded()
-//  ✔ buildVector()
-//  ✔ predict()
-//  ✔ rankAssignments()      (optional for future use)
-//  ✔ rfPredict()
-// ----------------------------------------------------------
+
 
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-
-import '../../services/team/team_model_v5.dart';   // TeamFeatures + feature order
-
+import '../../services/team/team_model_v5.dart';  
 
 
-// =========================
-// PickedPlayer (same as before)
-// =========================
 class PickedPlayer {
   final String uid;
   final String name;
@@ -32,11 +17,6 @@ class PickedPlayer {
   });
 }
 
-
-
-// =========================
-// TeamAssignment (optional)
-// =========================
 class TeamAssignment {
   final Map<String, String> roleToUid;
   final double winrate;
@@ -45,10 +25,6 @@ class TeamAssignment {
 }
 
 
-
-// =========================
-// ModelService V5 — FINAL
-// =========================
 class ModelService {
   static const _modelJsonPath = 'assets/model/random_forest_v5.json';
   static const _featPath = 'assets/model/feature_cols_v5.txt';
@@ -59,17 +35,13 @@ class ModelService {
   List<String> get featureOrder => _featureOrder;
 
 
-
-  // -------------------------------------------
-  // LOAD MODEL + FEATURE ORDER
-  // -------------------------------------------
   Future<void> ensureLoaded() async {
     if (_rf != null) return;
 
-    // Load model JSON
+    
     String jsonStr = await rootBundle.loadString(_modelJsonPath);
 
-    // Fix Infinity / NaN
+  
     jsonStr = jsonStr
         .replaceAll('Infinity', '1e300')
         .replaceAll('-Infinity', '-1e300')
@@ -77,7 +49,7 @@ class ModelService {
 
     _rf = jsonDecode(jsonStr);
 
-    // Load feature order
+  
     final featText = await rootBundle.loadString(_featPath);
     _featureOrder = featText
         .split(RegExp(r'\r?\n'))
@@ -89,11 +61,6 @@ class ModelService {
   }
 
 
-
-  // -------------------------------------------
-  // Convert feature map → numeric vector
-  // Must match feature_cols_v5.txt order
-  // -------------------------------------------
   List<double> buildVector(Map<String, double> fmap) {
     final vec = List<double>.filled(_featureOrder.length, 0.0);
 
@@ -105,20 +72,12 @@ class ModelService {
   }
 
 
-
-  // -------------------------------------------
-  // Predict winrate (0–1 float)
-  // -------------------------------------------
   double predict(List<double> vec) {
     final p = rfPredict(vec);
     return p.clamp(0.0, 1.0);
   }
 
 
-
-  // -------------------------------------------
-  // Random Forest Evaluation
-  // -------------------------------------------
   double rfPredict(List<double> x) {
     double _toDouble(dynamic v, {double or = 0}) {
       if (v is num) return v.toDouble();
@@ -139,7 +98,7 @@ class ModelService {
       while (true) {
         final n = nodes[idx];
 
-        // Leaf
+        
         if (n.containsKey('v') ||
             n.containsKey('value') ||
             n.containsKey('prob')) {
@@ -147,7 +106,7 @@ class ModelService {
           break;
         }
 
-        // internal node
+     
         final i = _toDouble(n['i'] ?? n['feature']).round();
         final thr = _toDouble(n['t'] ?? n['threshold']);
         final left = _toDouble(n['l'] ?? n['left']).round();
@@ -164,9 +123,6 @@ class ModelService {
 
 
 
-  // ------------------------------------------------
-  // Optional method: rank 120 assignments (if needed)
-  // ------------------------------------------------
   List<TeamAssignment> rankAssignments(
       List<Map<String, String>> assignments,
       List<double> winrates,
