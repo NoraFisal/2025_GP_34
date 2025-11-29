@@ -34,7 +34,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
   bool _loading = true;
   bool _saving = false;
 
-  // NEW: visibility toggles (passed back to profile page; NOT saved to DB)
+  
   bool _showAge = true;
   bool _showCity = true;
   bool _showGender = true;
@@ -53,7 +53,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
       _cityCtrl.text = me.city;
       _games..clear()..addAll(me.games);
      _currentPhotoB64 = me.profilePhoto ??'';
-      // reasonable defaults when opening editor
+    
       _showCity = me.city.trim().isNotEmpty;
     }
     if (mounted) setState(() => _loading = false);
@@ -181,7 +181,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     }
     return BgScaffold(
       appBar: AppBar(
-        centerTitle: true, // CENTERED TITLE (requested)
+        centerTitle: true, 
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -220,7 +220,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
         children: [
           const SizedBox(height: 12),
 
-          // Avatar + Change
+    
           Center(
             child: Stack(
               clipBehavior: Clip.none,
@@ -255,10 +255,10 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _label('Name'),
-                _field(_nameCtrl, maxLen: 24), // Name required (default validator)
+                _field(_nameCtrl, maxLen: 24),
 
                 _label('City'),
-                _field(_cityCtrl, validator: (v) => null), // City OPTIONAL
+                _field(_cityCtrl, validator: (v) => null), 
 
                 _label('Birth date (dd/mm/yyyy)'),
                 GestureDetector(
@@ -273,7 +273,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
                 ),
 
                 const SizedBox(height: 8),
-                // NEW: visibility toggles (only UI; not stored in DB)
+                
                 SwitchListTile.adaptive(
                   value: _showAge,
                   onChanged: _saving ? null : (v) => setState(() => _showAge = v),
@@ -314,7 +314,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
 
                 const SizedBox(height: 18),
 
-                // Save: full width + glow
+                
                 Container(
                   decoration: BoxDecoration(
                     boxShadow: [
@@ -372,7 +372,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
 
 
 
-  // Game checkbox
+ 
   Widget _gameTile(String name) {
     final checked = _games.contains(name);
     return CheckboxListTile(
