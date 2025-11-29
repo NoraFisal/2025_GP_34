@@ -1,9 +1,9 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// 🔹 نموذج الرسالة (محدّث)
+
 class Message {
-  final String id; // ✅ أضفنا id
+  final String id; 
   final String senderId;
   final String receiverId;
   final String contact ;
@@ -11,7 +11,7 @@ class Message {
   final String status;
   final String? type;
  
-  final String? teamId; // ✅ معرف الفريق
+  final String? teamId; 
  
 
   Message({
@@ -44,7 +44,7 @@ class Message {
   factory Message.fromDoc(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return Message(
-      id: doc.id, // ✅ نحصل على id من document
+      id: doc.id, 
       senderId: data['SenderID'] ?? '',
       receiverId: data['ReceiverID'] ?? '',
       contact : data['contact'] ?? '',
@@ -59,7 +59,6 @@ class Message {
   }
 }
 
-/// 🔹 نموذج المحادثة (PlayerChat)
 class Chat {
   final String id;
   final List<String> participants;
