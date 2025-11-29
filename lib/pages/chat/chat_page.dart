@@ -43,12 +43,12 @@ class _ChatState extends State<Chat> {
 
   @override
   void dispose() {
-    _markMessagesAsRead(); // 👈 تأكيد تعليم الرسائل كمقروءة عند مغادرة الشاشة
+    _markMessagesAsRead(); 
     _controller.dispose();
     super.dispose();
   }
 
-  /// 🔹 تحميل صورة المستخدم الحالية
+ 
   Future<void> _loadMyProfileImage() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -67,7 +67,7 @@ class _ChatState extends State<Chat> {
     }
   }
 
-  /// 🔹 تعليم الرسائل غير المقروءة كـ "read"
+
   Future<void> _markMessagesAsRead() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -94,7 +94,6 @@ class _ChatState extends State<Chat> {
     debugPrint('✅ All player messages marked as READ for ${widget.chatId}');
   }
 
-  /// 🔹 التعامل مع الصور سواء Base64 أو URL
   ImageProvider? _getImage(String? img) {
     if (img == null || img.isEmpty) return null;
     if (img.startsWith('http')) return NetworkImage(img);
@@ -323,7 +322,7 @@ class _ChatState extends State<Chat> {
                               text,
                             );
                             _controller.clear();
-                            await _markMessagesAsRead(); // 👈 بعد الإرسال
+                            await _markMessagesAsRead(); 
                           },
                         ),
                       ],
