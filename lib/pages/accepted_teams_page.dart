@@ -32,7 +32,7 @@ class AcceptedTeamsPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: Container(
-        // ✅ same background style as HomePage
+      
         decoration: const BoxDecoration(
           color: Colors.black,
           image: DecorationImage(
@@ -57,7 +57,7 @@ class AcceptedTeamsPage extends StatelessWidget {
 
                   final docs = snapshot.data!.docs;
 
-                  // manual sorting by createdAt (desc)
+                 
                   docs.sort((a, b) {
                     final aT = a['createdAt'] as Timestamp?;
                     final bT = b['createdAt'] as Timestamp?;
@@ -91,7 +91,7 @@ class AcceptedTeamsPage extends StatelessWidget {
                       final data = docs[i].data();
                       final teamId = docs[i].id;
 
-                      // ✅ support multiple possible logo fields
+                      
                       final rawLogo = (data['logoUrl'] ??
                               data['Logo'] ??
                               data['logo'] ??
@@ -182,7 +182,6 @@ class AcceptedTeamsPage extends StatelessWidget {
               ),
             ),
 
-            // SIDE NAV
             Positioned(
               left: 0,
               top: kToolbarHeight + 20,
