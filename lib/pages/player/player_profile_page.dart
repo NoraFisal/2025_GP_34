@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -39,7 +39,6 @@ class _PlayerProfilePageState extends State<PlayerProfilePage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    // Player Chats
     FirebaseFirestore.instance
         .collection('PlayerChat')
         .where('participants', arrayContains: user.uid)
@@ -57,7 +56,6 @@ class _PlayerProfilePageState extends State<PlayerProfilePage> {
       if (mounted) setState(() => _unreadPlayer = total);
     });
 
-    // Team Chats
     FirebaseFirestore.instance.collection('TeamChat').snapshots().listen((teamChats) async {
       int totalT = 0;
       for (var chat in teamChats.docs) {
@@ -73,7 +71,7 @@ class _PlayerProfilePageState extends State<PlayerProfilePage> {
 
   int get _totalUnread => _unreadPlayer + _unreadTeam;
 
-  // NEW PROGRESS BAR UPDATE DIALOG
+
   Future<void> _showProgressDialog(Stream<double> progressStream) async {
     return showDialog(
       context: context,
