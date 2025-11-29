@@ -93,7 +93,7 @@ actions: [
                             final info =
                                 (data['Info'] ?? '').toString();
 
-                            // ✅ Decode Base64 photo safely
+                         
                             Uint8List? imageBytes;
                             if (photo.isNotEmpty) {
                               try {
@@ -166,7 +166,7 @@ actions: [
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     _glowRectButton('Add New', () {
-                                      // Add tournament or feature
+                                    
                                     }),
                                   ],
                                 ),
