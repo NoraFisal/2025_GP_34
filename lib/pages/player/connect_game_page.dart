@@ -57,16 +57,15 @@ class _ConnectGamePageState extends State<ConnectGamePage> with TickerProviderSt
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Step 1/3: linking…')));
       await svc.connectLoL(playerId: uid, gameName: _nameCtrl.text, tagLine: _tagCtrl.text);
 
-      // remove any manual roleStats you previously added so results are accurate
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Step 2/3: clearing old role stats…')));
       await svc.clearRoleStats(uid);
 
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Step 3/3: pulling 50 matches…')));
       await svc.buildSeedsForLinkedLol(
         playerId: uid,
-        maxMatches: 50,          // ← 50 like Colab
-        forceRefresh: true,      // ensure we rebuild
-        allowNonRankedIfEmpty: true, // helpful for NA1 testing
+        maxMatches: 50,       
+        forceRefresh: true,     
+        allowNonRankedIfEmpty: true, 
       );
 
       if (!mounted) return;
@@ -153,7 +152,7 @@ class _ConnectGamePageState extends State<ConnectGamePage> with TickerProviderSt
     );
   }
 
-  // helpers
+
   Widget _gameCard({required String label, required String asset, required bool selected, VoidCallback? onTap}) {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
