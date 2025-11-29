@@ -27,17 +27,16 @@ class _ChatListPageState extends State<ChatListPage> {
   bool _isLoading = false;
   String _searchQuery = '';
 
-  int _playerUnreadCount = 0; // 🔴 عدد إشعارات Player
-  int _teamUnreadCount = 0;   // 🔴 عدد إشعارات Team
+  int _playerUnreadCount = 0; 
+  int _teamUnreadCount = 0;   
 
   @override
   void initState() {
     super.initState();
     _loadProfileImage();
-    _listenUnreadCounts(); // ✅ مراقبة الإشعارات لحظيًا
+    _listenUnreadCounts(); 
   }
 
-  /// ✓ تحميل صورة المستخدم الحالي
   Future<void> _loadProfileImage() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -54,12 +53,12 @@ class _ChatListPageState extends State<ChatListPage> {
     }
   }
 
-  /// ✅ مراقبة عدد الرسائل غير المقروءة لحظياً (Player + Team)
+ 
   void _listenUnreadCounts() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    // 🔹 مراقبة محادثات الـ Player
+   
     FirebaseFirestore.instance
         .collection('PlayerChat')
         .where('participants', arrayContains: user.uid)
@@ -80,7 +79,6 @@ class _ChatListPageState extends State<ChatListPage> {
       }
     });
 
-    // 🔹 مراقبة محادثات الـ Team
     FirebaseFirestore.instance.collection('TeamChat').snapshots().listen((teamChats) async {
       int totalTeamUnread = 0;
       for (var chat in teamChats.docs) {
@@ -179,22 +177,22 @@ class _ChatListPageState extends State<ChatListPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ✅ أزرار Player/Team
+                 
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
                     child: _buildModeSelector(),
                   ),
 
-                  // ✅ البحث
+                  
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: _buildSearchBar(),
                   ),
 
-                  // ✅ مسافة إضافية بين البحث والقائمة
+               
                   const SizedBox(height: 16),
 
-                  // ✅ القائمة
+                 
                   Expanded(
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
@@ -209,7 +207,7 @@ class _ChatListPageState extends State<ChatListPage> {
               ),
             ),
           ),
-          // ✅ السايد نافي
+          
           Positioned(
             top: kToolbarHeight + 20,
             left: 0,
@@ -218,7 +216,7 @@ class _ChatListPageState extends State<ChatListPage> {
         ],
       ),
 
-      // ✅ الزر السفلي
+ 
       floatingActionButton: _selectedTab == 'player'
           ? Container(
               decoration: BoxDecoration(
@@ -268,7 +266,7 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
-  // 🔘 تبويبات Player/Team مع البادج
+
   Widget _buildModeSelector() {
     return Container(
       decoration: BoxDecoration(
@@ -359,7 +357,7 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
-  // 🔍 شريط البحث
+
   Widget _buildSearchBar() {
     return TextField(
       onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
@@ -387,7 +385,7 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
-  // 📩 Player Chats
+
   Widget _buildPlayerChats(String uid) {
     return StreamBuilder<List<model.Chat>>(
       stream: MessageService.getUserChats(uid),
@@ -551,7 +549,7 @@ class _ChatListPageState extends State<ChatListPage> {
     return result;
   }
 
-  // 👥 Team Chats
+
   Widget _buildTeamChats(String uid) {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: TeamService.getUserTeams(),
