@@ -1,4 +1,4 @@
-// DIRECT version (no Cloud Functions) — FOR TESTING ONLY
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -8,17 +8,15 @@ class RiotLinkService {
   final FirebaseFirestore db;
   RiotLinkService(this.db);
 
-  // 24h dev key (or pass with --dart-define=RIOT_KEY=RGAPI-xxxx)
+  
   static const String _riotKey =
       String.fromEnvironment('RIOT_KEY', defaultValue: 'RGAPI-b7a9b5fe-3c91-4a6a-97d7-6658b7d2cb4a');
 
-  // 'auto' infers americas|europe|asia; or force a value via --dart-define
+
   static const String _routingOverride =
       String.fromEnvironment('RIOT_ROUTING', defaultValue: 'auto');
 
-  // ---------------------------------------------------------------------------
-  // Link LoL (writes PUUID + routing). When auto, try all clusters until 200 OK
-  // ---------------------------------------------------------------------------
+
   Future<void> connectLoL({
     required String playerId,
     required String gameName,
@@ -32,7 +30,7 @@ class RiotLinkService {
     final tag  = tagLine.trim().toUpperCase();
 
     final preferred = _routingOverride.toLowerCase();
-    // try all three when auto (this fixes cases like Z10 / NA1)
+    
     final candidates = (preferred == 'auto')
         ? const ['europe', 'americas', 'asia']
         : [preferred];
@@ -58,7 +56,6 @@ class RiotLinkService {
       if (resp.statusCode == 429) {
         throw Exception('Rate limited by Riot (429). Try later.');
       }
-      // 404 here may just mean "not this cluster" — keep trying others.
     }
 
     if (acct == null || routingUsed == null) {
@@ -74,21 +71,17 @@ class RiotLinkService {
       'gameName': user,
       'tagLine': tag,
       'puuid': puuid,
-      'region': routingUsed, // save the confirmed cluster
+      'region': routingUsed, 
       'verified': true,
       'status': 'linked',
       'connectedAt': FieldValue.serverTimestamp(),
       'lastFetchedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 
-    // debug
-    // ignore: avoid_print
     print('LINKED LoL: uid=$playerId puuid=$puuid region=$routingUsed');
   }
 
-  // ---------------------------------------------------------------------------
-  // OPTIONAL: clear manual roleStats you added, so results become accurate
-  // ---------------------------------------------------------------------------
+
   Future<void> clearRoleStats(String playerId) async {
     final base = db.collection('Player').doc(playerId).collection('linkedGames').doc('lol');
     final snap = await base.collection('roleStats').get();
@@ -101,15 +94,13 @@ class RiotLinkService {
     print('Cleared roleStats for $playerId');
   }
 
-  // ---------------------------------------------------------------------------
-  // Build per-role seeds under roleStats/{role}
-  // ---------------------------------------------------------------------------
+
   Future<void> buildSeedsForLinkedLol({
     required String playerId,
-    int maxMatches = 50,                              // pull 50 like your Colab
+    int maxMatches = 50,                              
     Duration freshness = const Duration(days: 14),
     bool forceRefresh = false,
-    bool allowNonRankedIfEmpty = true,                // helpful for NA1 tests
+    bool allowNonRankedIfEmpty = true,                
   }) async {
     final lolRef = db.collection('Player').doc(playerId)
         .collection('linkedGames').doc('lol');
@@ -124,10 +115,10 @@ class RiotLinkService {
     if (puuid.isEmpty || region.isEmpty) {
       throw Exception('Missing puuid/region on linkedGames/lol.');
     }
-    // ignore: avoid_print
+    
     print('SEEDS: using puuid=$puuid region=$region');
 
-    // Freshness gate (skip only when NOT forced)
+    
     final rs = await lolRef.collection('roleStats').get();
     final now = DateTime.now();
     final isFresh = rs.docs.isNotEmpty && rs.docs.every((d) {
@@ -136,32 +127,31 @@ class RiotLinkService {
     });
     if (!forceRefresh && isFresh) {
       await lolRef.set({'lastFetchedAt': FieldValue.serverTimestamp()}, SetOptions(merge: true));
-      // ignore: avoid_print
+      
       print('Seeds fresh; skipping. Use forceRefresh:true to override.');
       return;
     }
 
-    // 1) recent ranked match IDs
+   
     var ids = await _getMatchIds(region, puuid, maxMatches, rankedOnly: true);
-    // ignore: avoid_print
+    
     print('RIOT: got ${ids.length} ranked match IDs');
     if (ids.isEmpty && allowNonRankedIfEmpty) {
-      // helpful for accounts with no ranked; for production you can disable this.
-      // ignore: avoid_print
+    
       print('No recent ranked matches; testing with ANY queue…');
       ids = await _getMatchIds(region, puuid, maxMatches, rankedOnly: false);
-      // ignore: avoid_print
+     
       print('RIOT: got ${ids.length} ANY-queue match IDs');
     }
 
-    // 2) aggregate
+  
     final seeds = await _buildSeedsFromMatches(region, puuid, ids);
 
-    // 3) write roleStats
+    
     final batch = db.batch();
     for (final s in seeds) {
       final ref = lolRef.collection('roleStats').doc(s.role);
-      // ignore: avoid_print
+      
       print('WRITE role=${s.role} games=${s.games} wins=${s.wins}');
       batch.set(ref, {
         'puuid': puuid,
@@ -183,13 +173,11 @@ class RiotLinkService {
     batch.set(lolRef, {'lastFetchedAt': FieldValue.serverTimestamp()}, SetOptions(merge: true));
     await batch.commit();
 
-    // ignore: avoid_print
+   
     print('FIRESTORE: wrote roleStats for ${seeds.length} roles.');
   }
 
-  // ---------------------------------------------------------------------------
-  // Internal helpers
-  // ---------------------------------------------------------------------------
+ 
   Future<List<String>> _getMatchIds(
     String routing,
     String puuid,
@@ -219,7 +207,7 @@ class RiotLinkService {
 
     for (var i = 0; i < max; i++) {
       final mid = matchIds[i];
-      // ignore: avoid_print
+      
       print('RIOT: fetching match ${i + 1}/$max id=$mid');
 
       final url = Uri.parse('https://$routing.api.riotgames.com/lol/match/v5/matches/$mid');
@@ -229,7 +217,7 @@ class RiotLinkService {
         final res = await _withRetry(() => http.get(url, headers: {'X-Riot-Token': _riotKey}));
         m = jsonDecode(res.body) as Map<String, dynamic>;
       } catch (e) {
-        // ignore: avoid_print
+     
         print('RIOT: match fetch failed ($mid): $e');
         await Future.delayed(perReqDelay);
         continue;
@@ -243,7 +231,7 @@ class RiotLinkService {
         continue;
       }
 
-      // EXACT Colab mapping
+      
       final raw = ((me['teamPosition'] ?? me['individualPosition'] ?? '') as String).toUpperCase();
       String? role;
       switch (raw) {
@@ -252,7 +240,7 @@ class RiotLinkService {
         case 'MIDDLE':  role = 'middle';  break;
         case 'JUNGLE':  role = 'jungle';  break;
         case 'TOP':     role = 'top';     break;
-        default:        role = null;      break; // NONE/UNKNOWN → skip
+        default:        role = null;      break; 
       }
       if (role == null) {
         await Future.delayed(perReqDelay);
@@ -322,7 +310,7 @@ class RiotLinkService {
   }
 }
 
-// accumulators & struct
+
 class _Acc { int games=0, wins=0, k=0, d=0, a=0, cs=0, gold=0; }
 
 class _RoleSeed {
