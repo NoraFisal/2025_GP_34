@@ -29,7 +29,7 @@ class _NewChatState extends State<NewChat> {
     });
   }
 
-  /// تحميل المحادثات السابقة
+ 
   Future<void> _loadExistingChats() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -52,7 +52,6 @@ class _NewChatState extends State<NewChat> {
     });
   }
 
-  /// إنشاء محادثة جديدة أو الحصول على الموجودة
   Future<String> _getOrCreateChat(String otherUserId) async {
     final db = FirebaseFirestore.instance;
     final user = FirebaseAuth.instance.currentUser;
@@ -78,7 +77,7 @@ class _NewChatState extends State<NewChat> {
     return newChat.id;
   }
 
-  /// تجهيز الصورة من رابط أو Base64
+
   ImageProvider? _getImage(String? img) {
     if (img == null || img.isEmpty) return null;
     if (img.startsWith('http')) return NetworkImage(img);
@@ -89,7 +88,6 @@ class _NewChatState extends State<NewChat> {
     }
   }
 
-  /// تسليط الضوء على الجزء المطابق
   Widget _buildHighlightedText(String fullText, String query) {
     if (query.isEmpty) {
       return Text(
@@ -152,7 +150,7 @@ class _NewChatState extends State<NewChat> {
     );
   }
 
-  /// ترتيب الأسماء بحيث اللي تبدأ بالبحث تطلع أولاً
+
   List<QueryDocumentSnapshot> _sortPlayers(List<QueryDocumentSnapshot> players) {
     if (_searchQuery.isEmpty) return players;
 
@@ -171,7 +169,7 @@ class _NewChatState extends State<NewChat> {
       if (aStarts && !bStarts) return -1;
       if (bStarts && !aStarts) return 1;
 
-      // fallback إلى الترتيب الأبجدي
+      
       return nameA.compareTo(nameB);
     });
 
