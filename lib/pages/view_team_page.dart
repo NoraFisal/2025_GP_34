@@ -33,7 +33,7 @@ class ViewTeamPage extends StatelessWidget {
 
         return BgScaffold(
           appBar: AppBar(
-            automaticallyImplyLeading: false, // FIX black arrow bug
+            automaticallyImplyLeading: false, 
             backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
@@ -48,7 +48,7 @@ class ViewTeamPage extends StatelessWidget {
               ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  // TEAM LOGO
+                
                   Center(
                     child: CircleAvatar(
                       radius: 55,
@@ -61,7 +61,7 @@ class ViewTeamPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // TEAM NAME
+            
                   Center(
                     child: Text(
                       data['name'] ?? 'Team Name',
@@ -74,7 +74,7 @@ class ViewTeamPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  // DESCRIPTION
+        
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.08),
@@ -103,7 +103,7 @@ class ViewTeamPage extends StatelessWidget {
                 ],
               ),
 
-              // SIDE NAV
+   
               Positioned(
                 left: 0,
                 top: kToolbarHeight + 20,
@@ -116,7 +116,7 @@ class ViewTeamPage extends StatelessWidget {
     );
   }
 
-  // ---------------- TEAM MEMBERS ---------------------
+
 
   Widget _buildTeamMembers(String teamId) {
     return FutureBuilder<QuerySnapshot>(
