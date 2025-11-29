@@ -1,4 +1,4 @@
-//new2
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -79,7 +79,7 @@ class _APageState extends State<APage> {
     return Scaffold(
       body: Stack(
         children: [
-          // 📸 Background
+         
           Image.asset(
             'assets/images/background.png',
             fit: BoxFit.cover,
@@ -88,7 +88,6 @@ class _APageState extends State<APage> {
           ),
           Container(color: Colors.black.withOpacity(0.35)),
 
-          // 🔹 App logo (top-right)
           Positioned(
             top: 0,
             right: 0,
@@ -102,7 +101,7 @@ class _APageState extends State<APage> {
             ),
           ),
 
-          // ✅ Main content
+         
           SafeArea(
             child: ListView(
               padding: const EdgeInsets.all(24.0),
@@ -168,7 +167,7 @@ class _APageState extends State<APage> {
 
                               const SizedBox(height: 24),
 
-                              // 🔹 Send verification email button
+                             
                               SizedBox(
                                 width: double.infinity,
                                 height: 46,
@@ -203,7 +202,7 @@ class _APageState extends State<APage> {
 
                               const SizedBox(height: 16),
 
-                              // 🔹 Continue button
+                             
                               SizedBox(
                                 width: double.infinity,
                                 height: 46,
