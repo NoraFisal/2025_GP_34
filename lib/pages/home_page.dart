@@ -1,4 +1,4 @@
-// lib/ui/home_page.dart  (path name may differ in your project)
+
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,7 +26,6 @@ class _HomePageState extends State<HomePage> {
   bool isSearching = false;
   String? profileImageUrl;
 
-  // listen for team status updates
   StreamSubscription<TeamStatusUpdate?>? _teamStatusSubscription;
 
   @override
@@ -44,7 +43,7 @@ class _HomePageState extends State<HomePage> {
         TeamStatusService.listenToUserTeams(userId).listen(
       (update) {
         if (update != null && mounted) {
-          // dark-themed alert dialog
+         
           TeamStatusService.showTeamStatusAlert(context, update);
         }
       },
@@ -125,7 +124,7 @@ class _HomePageState extends State<HomePage> {
       final snapshot = await FirebaseFirestore.instance
           .collection('Team')
           .where('status', isEqualTo: 'Accepted')
-          .get(); // no orderBy (no index needed)
+          .get(); 
 
       debugPrint('✅ Found ${snapshot.docs.length} accepted teams');
 
@@ -139,7 +138,7 @@ class _HomePageState extends State<HomePage> {
         };
       }).toList();
 
-      // sort newest first
+    
       teams.sort((a, b) {
         final aTime = a['createdAt'] as Timestamp?;
         final bTime = b['createdAt'] as Timestamp?;
@@ -281,7 +280,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ---------- SEARCH RESULTS ----------
 
   Widget buildSearchResults() {
     return Column(
@@ -328,7 +326,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ---------- SECTIONS ----------
+
 
   Widget buildSection(BuildContext context, String title, Widget content) {
     return Column(
@@ -414,7 +412,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ---------- PLAYERS / TOURNAMENTS / TEAMS ----------
 
   Widget buildPlayersRow() => Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
