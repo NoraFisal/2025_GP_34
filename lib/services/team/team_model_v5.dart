@@ -1,17 +1,14 @@
-// lib/services/team/team_model_v5.dart
-//
-// Team synergy + feature builder (same logic as notebook).
-// Uses PlayerRoleStats from player_role_stats.dart.
+
 
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/services.dart' show rootBundle;
 import '../player/player_role_stats.dart';
 
-/// ------------- AssignedPlayer: player + assigned in this team -------------
+
 class AssignedPlayer {
   final PlayerRoleStats stats;
-  final String assignedRole; // top / jungle / middle / bottom / support
+  final String assignedRole; 
 
   AssignedPlayer({
     required this.stats,
@@ -19,7 +16,7 @@ class AssignedPlayer {
   });
 }
 
-/// ------------- TeamFeatures wrapper -------------
+
 class TeamFeatures {
   final Map<String, double> features;
   TeamFeatures(this.features);
@@ -28,7 +25,7 @@ class TeamFeatures {
   String toString() => features.toString();
 }
 
-/// ------------- Feature names (same order as feature_cols_v5.txt) -------------
+
 const List<String> modelV5FeatureNames = [
   'MinionsKilled_mean',
   'assists_mean',
@@ -62,7 +59,7 @@ const List<String> modelV5FeatureNames = [
   'dataset_source',
 ];
 
-/// ------------- Global means (from feature_means_v5.json) -------------
+
 Map<String, double> globalMeans = {};
 
 Future<void> loadGlobalMeans() async {
@@ -73,11 +70,11 @@ Future<void> loadGlobalMeans() async {
   globalMeans = jsonData.map(
     (key, value) => MapEntry(key, (value as num).toDouble()),
   );
-  // ignore: avoid_print
+
   print('🌟 Global means loaded (${globalMeans.length} entries)');
 }
 
-/// ------------- Helpers -------------
+
 double? _mean(List<double> v) {
   if (v.isEmpty) return null;
   return v.reduce((a, b) => a + b) / v.length;
@@ -106,7 +103,7 @@ double? _entropy(Map<String, int> counts) {
   return e;
 }
 
-/// ------------- Build synergy features for one team -------------
+
 TeamFeatures buildTeamFeatures(
   List<AssignedPlayer> team, {
   required bool isBlueTeam,
