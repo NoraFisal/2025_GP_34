@@ -1,6 +1,6 @@
-// lib/ui/player_search_page.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:convert'; // 👈 add this
+import 'dart:convert'; 
 import 'package:flutter/material.dart';
 
 import '/ui/components/bg_scaffold.dart';
@@ -9,10 +9,10 @@ import '../../services/player/model_service.dart';
 import '../player/player_profile_view_page.dart';
 
 class PlayerSearchPage extends StatefulWidget {
-  /// IDs that must not be offered (e.g., already selected + self).
+  
   final Set<String> already;
 
-  /// How many players you can still add (usually 4 because self is prefilled).
+  
   final int limit;
 
   const PlayerSearchPage({
@@ -32,12 +32,12 @@ class _PlayerSearchPageState extends State<PlayerSearchPage> {
   ImageProvider<Object>? _avatarProvider(String raw) {
     if (raw.isEmpty) return null;
 
-    // URL
+
     if (raw.startsWith('http')) {
       return NetworkImage(raw);
     }
 
-    // Base64 (like your profile page)
+
     try {
       return MemoryImage(base64Decode(raw.split(',').last));
     } catch (_) {
@@ -66,7 +66,7 @@ class _PlayerSearchPageState extends State<PlayerSearchPage> {
     final snap = await qy.limit(40).get();
     final out = <PickedPlayer>[];
     for (final d in snap.docs) {
-      if (widget.already.contains(d.id)) continue; // exclude self + already picked
+      if (widget.already.contains(d.id)) continue; 
       out.add(PickedPlayer(
         uid: d.id,
         name: (d.data()['Name'] ?? '').toString(),
@@ -335,7 +335,7 @@ class _PlayerSearchPageState extends State<PlayerSearchPage> {
   Widget _searchBar(ThemeData t) {
     return TextField(
       controller: _queryCtrl,
-      onChanged: (_) => setState(() {}), // live refresh
+      onChanged: (_) => setState(() {}), 
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.search, color: Colors.white70),
         hintText: 'Search players',
