@@ -1,4 +1,4 @@
-import 'dart:convert'; // for base64 avatar fallback
+import 'dart:convert'; 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/ui/components/bg_scaffold.dart';
@@ -145,7 +145,7 @@ class ViewPlayerProfilePage extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
 
-                      // Info Panel (only shows non-empty fields)
+                      
                       Card(
                         color: AppColors.cardDeep,
                         child: Padding(
