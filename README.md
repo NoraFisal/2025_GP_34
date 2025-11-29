@@ -1,21 +1,4 @@
-<<<<<<< HEAD
-# spark
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-=======
 <p align="left">
   <img src="./SPARK_Logo.png" alt="SPARK Logo" width="200"/>
 </p>
@@ -51,21 +34,63 @@ SPARK aims to address this gap by providing a localized mobile platform that all
 
 ---
 
-## Launching Instructions
+# 🚀 SPARK – Launching Instructions
 
-```bash
-# 1. Clone this repository
+Follow these steps to run the project correctly on your machine.
+
+---
+
+## 1️⃣ Clone the Repository
 git clone https://github.com/NoraFisal/2025_GP_34.git
 
-# 2. Navigate to the project directory
+---
+
+## 2️⃣ Navigate to the Project Folder
 cd 2025_GP_34
 
-# 3. Install dependencies
+---
+
+## 3️⃣ Install Flutter Dependencies
 flutter pub get
 
-# 4. Run the application
+---
+
+## 4️⃣ Download Required ML Model Files (IMPORTANT)
+
+GitHub does NOT include the machine-learning model files because they exceed GitHub’s size limit.
+
+You must download them manually from Google Drive:
+
+🔗 Model Files:  
+https://drive.google.com/drive/folders/1gF6DuxyyolP9jRGfX8MOLemnDZUzYaHs?usp=sharing
+
+After downloading, place the files inside:
+
+assets/model/
+
+Required files:
+- random_forest_v5.json
+- feature_means_v5.json
+- feature_cols_v5.txt
+
+Then run:
+flutter pub get
+
+---
+
+## 5️⃣ Run the Application
+
+### Web (Microsoft Edge)
+flutter run -d edge
+
+### Web (Chrome)
+flutter run -d chrome
+
+### Mobile (Android/iOS)
 flutter run
 
+---
 
+## ✔️ You're all set!
+If you need help with environment setup, screenshots for the README, or troubleshooting — just tell me.
 
->>>>>>> eb52ed0aea9410bccbd4a45f3efde503c98067b2
