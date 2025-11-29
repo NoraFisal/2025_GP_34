@@ -162,7 +162,7 @@ if (photoData.startsWith('http')) {
               children: [
                 const SizedBox(height: 12),
 
-                // Avatar + Change
+              
                 Center(
                   child: Stack(
                     clipBehavior: Clip.none,
@@ -190,7 +190,7 @@ if (photoData.startsWith('http')) {
 
                 const SizedBox(height: 24),
 
-                // fields
+             
                 Form(
                   key: _formKey,
                   child: Column(
@@ -207,7 +207,7 @@ if (photoData.startsWith('http')) {
 
                       const SizedBox(height: 18),
 
-                      // Save: full width + glow
+                     
                       Container(
                         decoration: BoxDecoration(
                           boxShadow: [
