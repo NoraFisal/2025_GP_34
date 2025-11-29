@@ -1,4 +1,4 @@
-import 'dart:convert'; // for base64Decode
+import 'dart:convert'; 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -44,10 +44,10 @@ class ViewOrganizerProfilePage extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              // طبقة تعتيم خفيفة
+             
               Container(color: Colors.black.withOpacity(0.25)),
 
-              // المحتوى
+            
               SafeArea(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -59,7 +59,7 @@ class ViewOrganizerProfilePage extends StatelessWidget {
                         children: [
                           const SizedBox(height: 8),
 
-                          // الهيدر
+                        
                           StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                             stream: docRef.snapshots(),
                             builder: (context, snap) {
@@ -73,7 +73,7 @@ class ViewOrganizerProfilePage extends StatelessWidget {
 
                               return Column(
                                 children: [
-                                  // أفاتار بدائرة وحلقة بيضاء
+                                  
                                   Container(
                                     padding: const EdgeInsets.all(3),
                                     decoration: const BoxDecoration(
@@ -138,7 +138,7 @@ class ViewOrganizerProfilePage extends StatelessWidget {
 
                           const SizedBox(height: 18),
 
-                          // البطولات
+                     
                           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                             stream: tournamentsQuery.snapshots(),
                             builder: (context, snap) {
