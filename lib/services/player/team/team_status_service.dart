@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 class TeamStatusService {
   static final _db = FirebaseFirestore.instance;
   
-  /// 🔔 راقب حالة الفِرَق اللي المستخدم عضو فيها
+ 
   static Stream<TeamStatusUpdate?> listenToUserTeams(String userId) {
     return _db
         .collection('Team')
         .snapshots()
         .asyncMap((snapshot) async {
       for (var teamDoc in snapshot.docs) {
-        // تحقق إذا المستخدم عضو في هذا الفريق
+      
         final memberDoc = await teamDoc.reference
             .collection('Members')
             .doc(userId)
@@ -23,7 +23,7 @@ class TeamStatusService {
         final status = teamData['status'] ?? '';
         final statusUpdatedAt = teamData['statusUpdatedAt'] as Timestamp?;
         
-        // تحقق إذا الحالة تغيرت مؤخراً (آخر 5 ثواني)
+
         if (statusUpdatedAt != null) {
           final diff = DateTime.now().difference(statusUpdatedAt.toDate());
           if (diff.inSeconds < 5 && (status == 'Accepted' || status == 'Rejected')) {
@@ -40,7 +40,7 @@ class TeamStatusService {
     }).distinct();
   }
 
-  /// 📢 عرض تنبيه للمستخدم
+  
   static void showTeamStatusAlert(
     BuildContext context,
     TeamStatusUpdate update,
@@ -106,7 +106,6 @@ class TeamStatusService {
     );
   }
 
-  /// 🎨 بديل: SnackBar بدل Dialog
   static void showTeamStatusSnackBar(
     BuildContext context,
     TeamStatusUpdate update,
@@ -165,7 +164,7 @@ class TeamStatusService {
   }
 }
 
-/// 📦 Model للتحديث
+
 class TeamStatusUpdate {
   final String teamId;
   final String teamName;
