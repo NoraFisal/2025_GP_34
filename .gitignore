@@ -1,0 +1,23 @@
+# Ignore heavy build files
+build/
+android/app/build/
+android/build/
+ios/build/
+linux/build/
+windows/build/
+macos/build/
+web/build/
+
+# Ignore compiled binaries
+*.apk
+*.so
+*.dill
+*.jar
+*.bin
+
+# Ignore Flutter generated files
+.flutter-plugins
+.flutter-plugins-dependencies
+.dart_tool/
+.packages
+pubspec.lock
