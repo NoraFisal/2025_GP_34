@@ -240,13 +240,12 @@ Widget build(BuildContext context) {
 
                 const SizedBox(height: 20),
 
-                // هذا اللي ينزل المحتوى لتحت
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 60), // ← هنا النزول
+                        const SizedBox(height: 60), 
 
                         TextField(
                           controller: _emailCtrl,
