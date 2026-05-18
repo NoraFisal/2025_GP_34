@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'contact_us_page.dart'; // استيراد صفحة Contact Us الحقيقية
+import 'contact_us_page.dart'; 
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -104,9 +104,9 @@ class SettingsPage extends StatelessWidget {
                           await FirebaseAuth.instance.signOut();
                           if (ctx.mounted) {
                             Navigator.pop(ctx); // Close dialog
-                            // الرجوع للـ start page بحذف كل الصفحات من الـ stack
+                            
                             Navigator.of(ctx).pushNamedAndRemoveUntil(
-                              '/', // أو اسم الـ route للـ start page عندك
+                              '/', 
                               (route) => false,
                             );
                           }
@@ -256,7 +256,7 @@ class SettingsPage extends StatelessWidget {
               title: 'Contact Us',
               subtitle: 'Get in touch with our support team',
               onTap: () {
-                // التوجيه لصفحة Contact Us الحقيقية
+                
                 Navigator.push(
                   context,
                   MaterialPageRoute(
