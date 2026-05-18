@@ -17,7 +17,7 @@ import '../team/create_team_page.dart';
 import '../team/team_details_page.dart';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// RECOMMENDATION ENGINE (v2 - per-game smart stats)
+// RECOMMENDATION ENGINE 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class RecommendationEngine {
@@ -334,7 +334,6 @@ static Future<void> syncAllBadges({
     final existing = existingMap[badge.badgeId];
     final alreadySeen = existing?['seen'] == true;
 
-    // ✅ إذا الجائزة موجودة مسبقاً، احذف earnedAt من الداتا الجديدة لأن set(merge:true) سيحافظ على القديمة
     final dataToWrite = Map<String, dynamic>.from(badge.data);
     if (existing != null) {
       dataToWrite.remove('earnedAt'); // ✅ لا تلمس التاريخ القديم
@@ -380,7 +379,6 @@ class _BadgeHexIcon extends StatelessWidget {
   final String sublabel;
   final DateTime? earnedAt;
   final Map<String, dynamic> rawData;
-  // ✅ FIX – uid added so the detail sheet can fetch the real date from Firestore
   final String uid;
  
   const _BadgeHexIcon({
@@ -401,7 +399,6 @@ class _BadgeHexIcon extends StatelessWidget {
     'medal':   Icons.military_tech_rounded,
   };
  
-  // ✅ FIX – uses DraggableScrollableSheet so sheet is only 55% of screen
   //          and passes uid to _BadgeDetailSheetLoader for live date fetch
   void _onTap(BuildContext context) {
     showModalBottomSheet(
@@ -548,7 +545,6 @@ class _BadgeDetailSheet extends StatelessWidget {
     required this.scrollController,
   });
  
-  // ✅ FIX 1 – English only
   String get _howToEarn {
     final type = (rawData['type'] ?? '').toString();
     if (type == 'spark_mvp') {
@@ -575,7 +571,6 @@ class _BadgeDetailSheet extends StatelessWidget {
     return 'Play and achieve milestones to earn this badge.';
   }
  
-  // ✅ FIX 3 – only reads real Timestamps; skips explicit null values
   String get _formattedDate {
     final updatedAt = rawData['updatedAt'];
     final earnedAt  = rawData['earnedAt'];
@@ -630,7 +625,6 @@ class _BadgeDetailSheet extends StatelessWidget {
     final icon = _iconMap[iconType] ?? Icons.star_rounded;
  
     return Container(
-      // ✅ FIX – gradient covers the FULL card from top to bottom
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [primaryColor, secondaryColor],
@@ -639,7 +633,6 @@ class _BadgeDetailSheet extends StatelessWidget {
         ),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      // ✅ FIX – overflow fixed via SingleChildScrollView + DraggableSheet controller
       child: SingleChildScrollView(
         controller: scrollController,
         child: Column(
@@ -657,7 +650,6 @@ class _BadgeDetailSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
  
-            // ✅ FIX – badge 30% smaller: 72×80, icon 32
             CustomPaint(
               size: const Size(72, 80),
               painter: _HexBadgePainter(
@@ -702,7 +694,6 @@ class _BadgeDetailSheet extends StatelessWidget {
             ),
             const SizedBox(height: 24),
  
-            // ✅ FIX – white body curves up from gradient, contains all tiles
             Container(
               width: double.infinity,
               padding: EdgeInsets.only(
@@ -801,7 +792,6 @@ class _BadgeDetailSheet extends StatelessWidget {
   }
 }
  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ✅ NEW – Loader: fetches real Firestore date then renders _BadgeDetailSheet
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  
 class _BadgeDetailSheetLoader extends StatefulWidget {
@@ -1091,12 +1081,10 @@ class _BadgesSectionInner extends StatelessWidget {
       
     };
   }
-// ✅ دالة مستقلة للعرض — تُستدعى من build()
 Future<Map<String, dynamic>> _loadAndSyncBadges() async {
   return await _BadgesSectionInner.computeAndSyncBadges(uid);
 }
 
-// ✅ static تُستدعى من UpdateRunner وAdd Game
 static Future<Map<String, dynamic>> computeAndSyncBadges(String uid) async {
   final db = FirebaseFirestore.instance;
   final games = ['lol', 'pubg', 'dota2'];
@@ -1283,7 +1271,6 @@ static Future<Map<String, dynamic>> computeAndSyncBadges(String uid) async {
         final badges = <Widget>[];
  
         if (hasRank) {
-          // ✅ FIX – removed 'updatedAt': null; loader fetches real date
           final rankRawData = {
             'type': 'win_rate_rank',
             'label': rankBadge['label'],
@@ -1302,7 +1289,6 @@ static Future<Map<String, dynamic>> computeAndSyncBadges(String uid) async {
         }
  
         if (hasStreak) {
-          // ✅ FIX – removed 'updatedAt': null
           final streakRawData = {
             'type': 'streak',
             'flameCount': streakBadge['flames'],
@@ -1321,7 +1307,6 @@ static Future<Map<String, dynamic>> computeAndSyncBadges(String uid) async {
         }
  
         if (hasMvp) {
-          // ✅ FIX – removed 'updatedAt': null
           final mvpRawData = {
             'type': 'spark_mvp',
             'teamWinRate': mvpWinRate,
@@ -1577,16 +1562,119 @@ class _PlayerProfilePageState extends State<PlayerProfilePage> {
                                     height: 1,
                                   ),
                                 ),
-                                _darkPillButton(
-                                  "Create Team",
-                                  compact: true,
-                                  icon: Icons.groups_rounded,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const CreateTeamPage(),
-                                      ),
+                                StreamBuilder<QuerySnapshot>(
+                                  stream: FirebaseFirestore.instance
+                                      .collection('Player')
+                                      .doc(uid)
+                                      .collection('linkedGames')
+                                      .limit(1)
+                                      .snapshots(),
+                                  builder: (context, linkedSnap) {
+                                    final isLinked = (linkedSnap.data?.docs.isNotEmpty) == true;
+                                    return _darkPillButton(
+                                      "Create Team",
+                                      compact: true,
+                                      icon: Icons.groups_rounded,
+                                      enabled: isLinked,
+                                      onTap: () {
+                                        if (isLinked) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => const CreateTeamPage(),
+                                            ),
+                                          );
+                                        } else {
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (dialogCtx) => Dialog(
+                                              backgroundColor: Colors.transparent,
+                                              elevation: 0,
+                                              insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+                                              child: Container(
+                                                width: 320,
+                                                padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(16),
+                                                  border: Border.all(color: const Color(0xFFCFD9DE)),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black.withOpacity(0.12),
+                                                      blurRadius: 24,
+                                                      offset: const Offset(0, 12),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Container(
+                                                      width: 54,
+                                                      height: 54,
+                                                      decoration: BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        border: Border.all(color: const Color(0xFFEB3D24), width: 2),
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons.link_off_rounded,
+                                                        color: Color(0xFFEB3D24),
+                                                        size: 30,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 14),
+                                                    const Text(
+                                                      'No Linked Account',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontFamily: 'Inter',
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w800,
+                                                        color: Color(0xFF0F1419),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                    const Text(
+                                                      'You must link a game account before creating a team.',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontFamily: 'Inter',
+                                                        fontSize: 14,
+                                                        fontWeight: FontWeight.w400,
+                                                        color: Color(0xFF536471),
+                                                        height: 1.4,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 14),
+                                                    SizedBox(
+                                                      width: 100,
+                                                      height: 36,
+                                                      child: ElevatedButton(
+                                                        onPressed: () => Navigator.pop(dialogCtx),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: const Color(0xFFEB3D24),
+                                                          foregroundColor: Colors.white,
+                                                          elevation: 0,
+                                                          shape: const StadiumBorder(),
+                                                        ),
+                                                        child: const Text(
+                                                          'OK',
+                                                          style: TextStyle(
+                                                            fontFamily: 'Inter',
+                                                            fontSize: 14,
+                                                            fontWeight: FontWeight.w400,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
                                     );
                                   },
                                 ),
@@ -1767,13 +1855,20 @@ class _PlayerProfilePageState extends State<PlayerProfilePage> {
     );
   }
 
-  Widget _darkPillButton(String text, {required VoidCallback onTap, bool compact = false, IconData? icon}) {
+  Widget _darkPillButton(
+    String text, {
+    required VoidCallback onTap,
+    bool compact = false,
+    IconData? icon,
+    bool enabled = true,
+  }) {
+    final color = enabled ? _accent : const Color(0xFFB0B0B0);
     return _HoverTap(
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: compact ? 10 : 12, vertical: compact ? 7 : 8),
-        decoration: BoxDecoration(color: _accent, borderRadius: BorderRadius.circular(999)),
+        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(999)),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1784,8 +1879,11 @@ class _PlayerProfilePageState extends State<PlayerProfilePage> {
             Text(
               text,
               style: TextStyle(
-                fontFamily: 'Inter', color: Colors.white,
-                fontSize: compact ? 11 : 12, fontWeight: FontWeight.w700, height: 1,
+                fontFamily: 'Inter',
+                color: Colors.white,
+                fontSize: compact ? 11 : 12,
+                fontWeight: FontWeight.w700,
+                height: 1,
               ),
             ),
           ],
@@ -2576,7 +2674,6 @@ class _SuggestionsContainer extends StatelessWidget {
   final linkedDocs = linkedSnap.data?.docs ?? [];
   if (linkedDocs.isEmpty) return const SizedBox.shrink();
 
-  // ✅ نتحقق إن في على الأقل لعبة واحدة اكتمل fetch حقها
   final verifiedDocs = linkedDocs.where((d) {
     final data = d.data() as Map<String, dynamic>;
     return data['lastFetchedAt'] != null;
@@ -2680,7 +2777,7 @@ class _SuggestionsContainer extends StatelessWidget {
         builder: (_) => ViewTournamentPage(tournamentId: tournId),
       )),
       borderRadius: BorderRadius.circular(14),
-child: Container(
+      child: Container(
   width: 160,
   height: 130,
   decoration: BoxDecoration(
