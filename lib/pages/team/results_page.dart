@@ -41,7 +41,7 @@ class _ResultsPageState extends State<ResultsPage> {
   static const Color _line = Color(0xFFCFD9DE);
   static const Color _dark = Color.fromRGBO(54, 52, 53, 1);
 
-  // ✅ Simple button styles - NO hover/press effects
+  
   ButtonStyle _darkButton() {
     return ElevatedButton.styleFrom(
       backgroundColor: _dark,
@@ -75,10 +75,10 @@ bool _loading = true;
 final Map<String, List<PlayerRoleStats>> _statsByPlayer = {};
 List<Map<String, dynamic>> top3 = [];
 
-// Reserved lineups = already used by pending or accepted teams
+
 final Set<String> _reservedLineupKeys = {};
 
-// ✅ FAST card flipping with spacing between cards
+
 final PageController _pageCtrl = PageController(viewportFraction: 0.88);
 
 @override
@@ -314,7 +314,7 @@ Widget build(BuildContext context) {
   );
 }
 
-// ✅ FAST with minimal smooth animation
+
 Widget _animatedCard(BuildContext context, Map<String, dynamic> comp, int index) {
   return AnimatedBuilder(
     animation: _pageCtrl,
@@ -337,7 +337,7 @@ Widget _animatedCard(BuildContext context, Map<String, dynamic> comp, int index)
   );
 }
 
-// ✅ WHITE CARD with reserved-lineup disabled state
+
 Widget _compositionCard(BuildContext context, Map<String, dynamic> comp, int index) {
   final lineupKey = (comp['lineupKey'] ?? '').toString();
   final isReserved = _reservedLineupKeys.contains(lineupKey);
@@ -484,7 +484,6 @@ Widget _compositionCard(BuildContext context, Map<String, dynamic> comp, int ind
   );
 }
 
-  // ✅ BIGGER player avatars (52 instead of 44)
   Widget _playerAvatarWithPill({required String uid, required String roleLabel}) {
     final p = widget.roster.firstWhere(
       (x) => x.uid == uid,
@@ -500,7 +499,7 @@ Widget _compositionCard(BuildContext context, Map<String, dynamic> comp, int ind
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ✅ BIGGER avatar: 52 instead of 44
+          
           Container(
             width: 52,
             height: 52,
@@ -696,7 +695,7 @@ Widget _compositionCard(BuildContext context, Map<String, dynamic> comp, int ind
     } catch (_) {}
   }
 
-  // 🔄 عرض مؤشّر التحميل
+ 
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -707,7 +706,7 @@ Widget _compositionCard(BuildContext context, Map<String, dynamic> comp, int ind
   );
 
   try {
-    // ✅ إنشاء مستند الفريق
+    
     final teamRef = db.collection('Team').doc();
 
     await teamRef.set({
@@ -721,7 +720,7 @@ Widget _compositionCard(BuildContext context, Map<String, dynamic> comp, int ind
       if (logoBase64 != null) 'logoUrl': logoBase64,
     });
 
-    // ✅ إضافة الأعضاء للأعضاء الفرعية
+   
     for (final entry in mapping.entries) {
       await teamRef.collection('Members').doc(entry.value).set({
         'role': entry.key,
@@ -729,19 +728,19 @@ Widget _compositionCard(BuildContext context, Map<String, dynamic> comp, int ind
       });
     }
 
-    // ✅ إنشاء محادثة الفريق في النظام الجديد الموحّد
+   
     final membersSnap =
         await db.collection('Team').doc(teamRef.id).collection('Members').get();
     final members = membersSnap.docs.map((d) => d.id).toList();
 
-    // إنشاء الشات عبر UnifiedChatService
+   
     await UnifiedChatService.createTeamChat(
       teamRef.id,
       members,
       logoUrl: logoBase64,
     );
 
-    // ✅ إغلاق المؤشر ثم التوجيه لقائمة المحادثات -> تبويب Requests
+    
     if (context.mounted) Navigator.pop(context);
     if (!context.mounted) return;
 
@@ -763,7 +762,7 @@ Widget _compositionCard(BuildContext context, Map<String, dynamic> comp, int ind
   }
 }
 
-  // ✅ Unified style matching Logout dialog
+ 
   Future<void> _showInfoPopup(
     BuildContext context, {
     required String title,
