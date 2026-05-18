@@ -437,11 +437,10 @@ class _SignupPageState extends State<SignupPage> {
                 children: [
                   const SizedBox(height: 18),
 
-                  // ===== HEADER - السهم + العنوان + اللوقو على نفس المستوى =====
+               
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // السهم - ثابت الحجم
                       IconButton(
                         visualDensity: VisualDensity.compact,
                         padding: EdgeInsets.zero,
@@ -452,7 +451,6 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                       const SizedBox(width: 4),
 
-                      // العنوان - يأخذ كل المساحة ويتكيف مع حجم الشاشة
                       Expanded(
   child: Center(
     child: FittedBox(
@@ -466,7 +464,6 @@ class _SignupPageState extends State<SignupPage> {
   ),
 ),
 
-                      // اللوقو - صغير ومتناسب
                       Image.asset(
                         'assets/images/Logo_Spark.png',
                         width: 75,
