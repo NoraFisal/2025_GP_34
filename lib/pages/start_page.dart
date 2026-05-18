@@ -20,7 +20,7 @@ class _StartPageState extends State<StartPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // الشبكة تدور بشكل مستمر — دورة كاملة كل 12 ثانية
+   
     _meshCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 12),
@@ -56,7 +56,7 @@ backgroundColor: const Color(0xFFFFFFFF),
         
           
 
-          // ── الشبكة الدوارة — وراء المحتوى مباشرة ──
+          
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _meshCtrl,
@@ -155,9 +155,6 @@ backgroundColor: const Color(0xFFFFFFFF),
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// الشبكة الدوارة — شكل blob مضغوط يدور حول نفسه
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _RotatingMeshPainter extends CustomPainter {
   final double progress;
@@ -180,8 +177,8 @@ class _RotatingMeshPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    const lineCount = 32;        // أكثف — كانت 22
-    const crossLineCount = 18;   // خطوط متقاطعة مائلة
+    const lineCount = 32;       
+    const crossLineCount = 18;   
     const pointsPerLine = 140;
 
     // ── الخطوط الأفقية الموجية ──
