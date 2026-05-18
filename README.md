@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # spark
 
 A new Flutter project.
@@ -95,7 +95,7 @@ GitHub does NOT include the machine-learning model files because they exceed Git
 You must download them manually from Google Drive:
 
 Model Files:
-https://drive.google.com/drive/folders/1gF6DuxyyolP9jRGfX8MOLemnDZUzYaHs?usp=sharing
+https://drive.google.com/drive/folders/1v3Zo-baUsxC8qw4N_H9L36EYDMnDUK2G
 
 After downloading, place the files inside:
 
