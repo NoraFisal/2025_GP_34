@@ -1,0 +1,304 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+class EditTeamPage extends StatefulWidget {
+  final String teamId;
+
+  const EditTeamPage({super.key, required this.teamId});
+
+  @override
+  State<EditTeamPage> createState() => _EditTeamPageState();
+}
+
+class _EditTeamPageState extends State<EditTeamPage> {
+  final _nameCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+
+  Uint8List? _logoBytes;
+  bool _loading = false;
+
+  // ===== Login / Signup palette =====
+  static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
+  static const Color _bg = Color(0xFFF7F7F7);
+  static const Color _text = Color(0xFF0F1419);
+  static const Color _muted = Color(0xFF536471);
+  static const Color _grayBtn = Color(0xFF2D2D2D);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTeam();
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
+  }
+
+  // ======================
+  // Load team (LOGIC UNCHANGED)
+  // ======================
+  Future<void> _loadTeam() async {
+    final doc =
+        await FirebaseFirestore.instance.collection('Team').doc(widget.teamId).get();
+
+    if (!doc.exists) return;
+
+    final d = doc.data() ?? {};
+    _nameCtrl.text = (d['name'] ?? '').toString();
+    _descCtrl.text = (d['description'] ?? '').toString();
+
+    final logo = (d['logoUrl'] ?? '').toString();
+    if (logo.isNotEmpty && !logo.startsWith('http')) {
+      try {
+        final cleaned = logo.contains(',') ? logo.split(',').last : logo;
+        _logoBytes = base64Decode(cleaned);
+      } catch (_) {}
+    }
+
+    if (mounted) setState(() {});
+  }
+
+  // ======================
+  // Pick logo (LOGIC UNCHANGED)
+  // ======================
+  Future<void> _pickLogo() async {
+    final picker = ImagePicker();
+    final xf = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1024);
+    if (xf == null) return;
+
+    final bytes = await xf.readAsBytes();
+    if (mounted) setState(() => _logoBytes = bytes);
+  }
+
+  // ======================
+  // Save (LOGIC UNCHANGED)
+  // ======================
+  Future<void> _save() async {
+    if (_loading) return;
+
+    setState(() => _loading = true);
+
+    try {
+      await FirebaseFirestore.instance.collection('Team').doc(widget.teamId).update({
+        'name': _nameCtrl.text.trim(),
+        'description': _descCtrl.text.trim(),
+        if (_logoBytes != null)
+          'logoUrl': 'data:image/png;base64,${base64Encode(_logoBytes!)}',
+      });
+
+      if (mounted) Navigator.pop(context, true);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  // ======================
+  // UI
+  // ======================
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _bg,
+      appBar: AppBar(
+        backgroundColor: _bg,
+        elevation: 0,
+        centerTitle: true,
+
+        // ✅ BACK ARROW — EXACT LOGIN/SIGNUP STYLE
+       leading: IconButton(
+  icon: const Icon(
+    Icons.arrow_back_ios_new_rounded,
+    size: 18,
+    color: Color(0xFF6B7280),
+  ),
+  onPressed: () => Navigator.pop(context),
+),
+
+
+        title: const Text(
+          'Team Management',
+          style: TextStyle(
+            fontFamily: 'Inter',
+            color: _accent,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(22, 26, 22, 30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ===== LOGO =====
+            Center(
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _accent, width: 3),
+                      color: Colors.white,
+                    ),
+                    child: ClipOval(
+                      child: _logoBytes == null
+                          ? const Icon(Icons.groups, size: 48, color: Colors.black38)
+                          : Image.memory(_logoBytes!, fit: BoxFit.cover),
+                    ),
+                  ),
+
+                  // Edit pill (same as Create Team / Profile)
+                  Positioned(
+                    right: -4,
+                    bottom: 8,
+                    child: GestureDetector(
+                      onTap: _pickLogo,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _accent,
+                          borderRadius: BorderRadius.circular(999),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _accent.withOpacity(0.25),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'Edit',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // ===== NAME FIELD =====
+            _UnderlineField(
+              label: 'Team name',
+              controller: _nameCtrl,
+            ),
+
+            const SizedBox(height: 26),
+
+            // ===== DESCRIPTION FIELD =====
+            _UnderlineField(
+              label: 'Description',
+              controller: _descCtrl,
+              maxLines: 3,
+            ),
+
+            const SizedBox(height: 40),
+
+            // ===== SAVE BUTTON (GRAY) =====
+            Center(
+              child: SizedBox(
+                width: 210,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _loading ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: _grayBtn,
+                    shape: const StadiumBorder(),
+                  ),
+                  child: _loading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Save',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ======================================================
+// Login / Signup underline field (UNCHANGED BEHAVIOR)
+// ======================================================
+class _UnderlineField extends StatelessWidget {
+  final String label;
+  final TextEditingController controller;
+  final int maxLines;
+
+  const _UnderlineField({
+    required this.label,
+    required this.controller,
+    this.maxLines = 1,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      style: const TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF0F1419),
+      ),
+      decoration: const InputDecoration(
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: Color.fromRGBO(235, 61, 36, 1),
+            width: 1.6,
+          ),
+        ),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: Color(0xFFCED4DA),
+            width: 1,
+          ),
+        ),
+      ).copyWith(
+        labelText: label,
+        labelStyle: const TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF536471),
+        ),
+      ),
+    );
+  }
+}

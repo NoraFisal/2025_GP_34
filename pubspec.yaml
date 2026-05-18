@@ -1,0 +1,76 @@
+name: merged_project
+description: "A merged Flutter project from hmoepage & test_spark"
+publish_to: 'none'
+
+version: 1.0.0+1
+http: ^1.2.2
+environment:
+  sdk: ^3.9.2
+dependencies:
+  url_launcher: ^6.2.6
+  flutter:
+    sdk: flutter
+  gal: ^1.1.0
+  google_fonts: ^6.2.1
+
+  # Firebase
+  firebase_core: ^4.1.1
+  cloud_firestore: ^6.0.2
+  firebase_auth: ^6.1.0
+  firebase_storage: 13.0.3
+
+  # UI & Utilities
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.2.1
+  intl: ^0.20.2
+
+  #pdf
+  pdf: ^3.10.8
+  printing: ^5.12.0
+  path_provider: ^2.1.2
+  share_plus: ^7.2.2
+  universal_html: ^2.2.4
+
+  # File & Image pickers
+  image_picker: ^1.1.2
+  file_picker: ^10.3.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/background.png
+    - assets/images/logo.png
+    - assets/images/Logo_Spark.png
+    - assets/images/nav_spark.png
+    - assets/images/lol.png
+    - assets/images/dota2.png
+    - assets/images/pubg.png
+    
+    - assets/images/1.png
+    - assets/images/2.png
+    - assets/images/3.png
+    - assets/images/4.png
+    - assets/images/5.png
+    - assets/images/6.png
+    - assets/images/7.png
+    - assets/images/8.png
+    - assets/images/9.png
+    - assets/images/Start_B.png
+
+    - assets/images/B1.png
+    - assets/images/B2.png
+    - assets/images/B3.png
+    - assets/images/B4.png
+    - assets/images/B5.png
+
+    - assets/model/random_forest_v5.json
+    - assets/model/feature_cols_v5.txt
+    - assets/model/feature_means_v5.json
+    - assets/json/feature_means_v5.json

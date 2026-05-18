@@ -1,0 +1,13 @@
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+android/app/build/
+ios/Pods/
+*.apk
+*.aab
+assets/model/random_forest.json
+assets/model/random_forest_v5.json
