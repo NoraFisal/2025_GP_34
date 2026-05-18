@@ -31,10 +31,10 @@ class _HomePageState extends State<HomePage> {
   bool isLoadingUserType = true;
 
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
-  static const Color _bg     = Color(0xFFFAFAFA);
-  static const Color _text   = Color(0xFF0F1419);
-  static const Color _muted  = Color(0xFF536471);
-  static const Color _line   = Color(0xFFCFD9DE);
+  static const Color _bg = Color(0xFFFAFAFA);
+  static const Color _text = Color(0xFF0F1419);
+  static const Color _muted = Color(0xFF536471);
+  static const Color _line = Color(0xFFCFD9DE);
 
   @override
   void initState() {
@@ -45,135 +45,166 @@ class _HomePageState extends State<HomePage> {
   Future<void> _detectUserType() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
-      setState(() { userType = UserType.unknown; isLoadingUserType = false; });
+      setState(() {
+        userType = UserType.unknown;
+        isLoadingUserType = false;
+      });
       return;
     }
     try {
-      final organizerDoc = await FirebaseFirestore.instance.collection('Organizer').doc(userId).get();
+      final organizerDoc = await FirebaseFirestore.instance
+          .collection('Organizer')
+          .doc(userId)
+          .get();
       if (organizerDoc.exists) {
-        setState(() { userType = UserType.organizer; isLoadingUserType = false; });
+        setState(() {
+          userType = UserType.organizer;
+          isLoadingUserType = false;
+        });
         return;
       }
-      final playerDoc = await FirebaseFirestore.instance.collection('Player').doc(userId).get();
+      final playerDoc = await FirebaseFirestore.instance
+          .collection('Player')
+          .doc(userId)
+          .get();
       if (playerDoc.exists) {
-        setState(() { userType = UserType.player; isLoadingUserType = false; });
+        setState(() {
+          userType = UserType.player;
+          isLoadingUserType = false;
+        });
         return;
       }
-      setState(() { userType = UserType.unknown; isLoadingUserType = false; });
+      setState(() {
+        userType = UserType.unknown;
+        isLoadingUserType = false;
+      });
     } catch (e) {
       debugPrint('Error detecting user type: $e');
-      setState(() { userType = UserType.unknown; isLoadingUserType = false; });
+      setState(() {
+        userType = UserType.unknown;
+        isLoadingUserType = false;
+      });
     }
   }
 
-String _normalize(String value) {
-  return value.trim().toLowerCase();
-}
-
-Future<void> _searchData(String query) async {
-  final q = _normalize(query);
-
-  if (q.isEmpty) {
-    setState(() {
-      searchResults.clear();
-      isSearching = false;
-    });
-    return;
+  String _normalize(String value) {
+    return value.trim().toLowerCase();
   }
 
-  setState(() => isSearching = true);
+  Future<void> _searchData(String query) async {
+    final q = _normalize(query);
 
-  try {
-    final snapshots = await Future.wait([
-      FirebaseFirestore.instance.collection('Player').get(),
-      FirebaseFirestore.instance.collection('Organizer').get(),
-      FirebaseFirestore.instance.collection('Team').get(),
-      FirebaseFirestore.instance.collection('Tournament').get(),
-    ]);
-
-    final playersSnapshot = snapshots[0];
-    final organizersSnapshot = snapshots[1];
-    final teamsSnapshot = snapshots[2];
-    final tournamentsSnapshot = snapshots[3];
-
-    bool matches(String value) {
-      return _normalize(value).contains(q);
+    if (q.isEmpty) {
+      setState(() {
+        searchResults.clear();
+        isSearching = false;
+      });
+      return;
     }
 
-    final results = <Map<String, dynamic>>[
-      ...playersSnapshot.docs
-          .where((doc) => matches((doc.data()['Name'] ?? '').toString()))
-          .map((doc) => {
+    setState(() => isSearching = true);
+
+    try {
+      final snapshots = await Future.wait([
+        FirebaseFirestore.instance.collection('Player').get(),
+        FirebaseFirestore.instance.collection('Organizer').get(),
+        FirebaseFirestore.instance.collection('Team').get(),
+        FirebaseFirestore.instance.collection('Tournament').get(),
+      ]);
+
+      final playersSnapshot = snapshots[0];
+      final organizersSnapshot = snapshots[1];
+      final teamsSnapshot = snapshots[2];
+      final tournamentsSnapshot = snapshots[3];
+
+      bool matches(String value) {
+        return _normalize(value).contains(q);
+      }
+
+      final results = <Map<String, dynamic>>[
+        ...playersSnapshot.docs
+            .where((doc) => matches((doc.data()['Name'] ?? '').toString()))
+            .map(
+              (doc) => {
                 'id': doc.id,
                 'type': 'Player',
                 'name': (doc.data()['Name'] ?? 'Unknown Player').toString(),
                 'image': (doc.data()['ProfilePhoto'] ?? '').toString(),
-              }),
+              },
+            ),
 
-      ...organizersSnapshot.docs
-          .where((doc) => matches((doc.data()['Name'] ?? '').toString()))
-          .map((doc) => {
+        ...organizersSnapshot.docs
+            .where((doc) => matches((doc.data()['Name'] ?? '').toString()))
+            .map(
+              (doc) => {
                 'id': doc.id,
                 'type': 'Organizer',
                 'name': (doc.data()['Name'] ?? 'Unknown Organizer').toString(),
                 'image': (doc.data()['ProfilePhoto'] ?? '').toString(),
-              }),
+              },
+            ),
 
-      ...teamsSnapshot.docs
-          .where((doc) => matches((doc.data()['name'] ?? '').toString()))
-          .map((doc) => {
+        ...teamsSnapshot.docs
+            .where((doc) => matches((doc.data()['name'] ?? '').toString()))
+            .map(
+              (doc) => {
                 'id': doc.id,
                 'type': 'Team',
                 'name': (doc.data()['name'] ?? 'Unknown Team').toString(),
                 'image': (doc.data()['logoUrl'] ?? '').toString(),
-              }),
+              },
+            ),
 
-      ...tournamentsSnapshot.docs
-          .where((doc) => matches((doc.data()['Title'] ?? '').toString()))
-          .map((doc) => {
+        ...tournamentsSnapshot.docs
+            .where((doc) => matches((doc.data()['Title'] ?? '').toString()))
+            .map(
+              (doc) => {
                 'id': doc.id,
                 'type': 'Tournament',
-                'name': (doc.data()['Title'] ?? 'Unknown Tournament').toString(),
+                'name': (doc.data()['Title'] ?? 'Unknown Tournament')
+                    .toString(),
                 'image': '',
-              }),
-    ];
-    results.sort((a, b) {
-  final aName = _normalize(a['name'].toString());
-  final bName = _normalize(b['name'].toString());
+              },
+            ),
+      ];
+      results.sort((a, b) {
+        final aName = _normalize(a['name'].toString());
+        final bName = _normalize(b['name'].toString());
 
-  final aStarts = aName.startsWith(q);
-  final bStarts = bName.startsWith(q);
+        final aStarts = aName.startsWith(q);
+        final bStarts = bName.startsWith(q);
 
-  if (aStarts && !bStarts) return -1;
-  if (!aStarts && bStarts) return 1;
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
 
-  return aName.compareTo(bName);
-});
+        return aName.compareTo(bName);
+      });
 
-    if (!mounted) return;
-    setState(() {
-      searchResults = results;
-      isSearching = false;
-    });
-  } catch (e) {
-    debugPrint('Search error: $e');
-    if (!mounted) return;
-    setState(() => isSearching = false);
+      if (!mounted) return;
+      setState(() {
+        searchResults = results;
+        isSearching = false;
+      });
+    } catch (e) {
+      debugPrint('Search error: $e');
+      if (!mounted) return;
+      setState(() => isSearching = false);
+    }
   }
-}
-
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // SMART SPOTLIGHT
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Future<List<Map<String, dynamic>>> _fetchSpotlightPlayers() async {
     try {
-      final playersSnap = await FirebaseFirestore.instance.collection('Player').get();
+      final playersSnap = await FirebaseFirestore.instance
+          .collection('Player')
+          .get();
       final List<Map<String, dynamic>> scored = [];
 
       for (final playerDoc in playersSnap.docs) {
         final data = playerDoc.data();
-        final uid  = playerDoc.id;
+        final uid = playerDoc.id;
 
         final badgesSnap = await FirebaseFirestore.instance
             .collection('Player')
@@ -181,46 +212,72 @@ Future<void> _searchData(String query) async {
             .collection('badges')
             .get();
 
-        double score         = 0;
+        double score = 0;
         String topBadgeLabel = '';
-        String topBadgeType  = '';
+        String topBadgeType = '';
 
         for (final badge in badgesSnap.docs) {
-          final bd   = badge.data();
+          final bd = badge.data();
           final type = (bd['type'] ?? '').toString();
 
           if (type == 'spark_mvp') {
             score += 100;
-            if (topBadgeLabel.isEmpty) { topBadgeLabel = 'SPARK MVP'; topBadgeType = 'trophy'; }
+            if (topBadgeLabel.isEmpty) {
+              topBadgeLabel = 'SPARK MVP';
+              topBadgeType = 'trophy';
+            }
           } else if (type == 'win_rate_rank') {
             final label = (bd['label'] ?? '').toString();
-            if (label == 'Diamond')     { score += 80; if (topBadgeLabel.isEmpty) { topBadgeLabel = 'Diamond'; topBadgeType = 'diamond'; } }
-            else if (label == 'Gold')   { score += 60; if (topBadgeLabel.isEmpty) { topBadgeLabel = 'Gold';    topBadgeType = 'medal';   } }
-            else if (label == 'Silver') { score += 40; if (topBadgeLabel.isEmpty) { topBadgeLabel = 'Silver';  topBadgeType = 'medal';   } }
-            else if (label == 'Bronze') { score += 20; if (topBadgeLabel.isEmpty) { topBadgeLabel = 'Bronze';  topBadgeType = 'medal';   } }
+            if (label == 'Diamond') {
+              score += 80;
+              if (topBadgeLabel.isEmpty) {
+                topBadgeLabel = 'Diamond';
+                topBadgeType = 'diamond';
+              }
+            } else if (label == 'Gold') {
+              score += 60;
+              if (topBadgeLabel.isEmpty) {
+                topBadgeLabel = 'Gold';
+                topBadgeType = 'medal';
+              }
+            } else if (label == 'Silver') {
+              score += 40;
+              if (topBadgeLabel.isEmpty) {
+                topBadgeLabel = 'Silver';
+                topBadgeType = 'medal';
+              }
+            } else if (label == 'Bronze') {
+              score += 20;
+              if (topBadgeLabel.isEmpty) {
+                topBadgeLabel = 'Bronze';
+                topBadgeType = 'medal';
+              }
+            }
           } else if (type == 'streak') {
             final flames = (bd['flameCount'] as num?)?.toInt() ?? 0;
             score += flames * 8.0;
             if (topBadgeLabel.isEmpty && flames >= 3) {
               topBadgeLabel = (bd['label'] ?? 'Streak').toString();
-              topBadgeType  = 'fire';
+              topBadgeType = 'fire';
             }
           }
           score += 5;
         }
 
         scored.add({
-          'id':            uid,
-          'name':          (data['Name'] ?? 'Player').toString(),
-          'photo':         (data['ProfilePhoto'] ?? '').toString(),
-          'score':         score,
-          'badgeCount':    badgesSnap.docs.length,
+          'id': uid,
+          'name': (data['Name'] ?? 'Player').toString(),
+          'photo': (data['ProfilePhoto'] ?? '').toString(),
+          'score': score,
+          'badgeCount': badgesSnap.docs.length,
           'topBadgeLabel': topBadgeLabel,
-          'topBadgeType':  topBadgeType,
+          'topBadgeType': topBadgeType,
         });
       }
 
-      scored.sort((a, b) => (b['score'] as double).compareTo(a['score'] as double));
+      scored.sort(
+        (a, b) => (b['score'] as double).compareTo(a['score'] as double),
+      );
       return scored.take(3).toList();
     } catch (e) {
       debugPrint('Error fetching spotlight players: $e');
@@ -238,9 +295,9 @@ Future<void> _searchData(String query) async {
       final teams = snapshot.docs.map((doc) {
         final data = doc.data();
         return {
-          'id':        doc.id,
-          'name':      (data['name'] ?? 'Unknown Team').toString(),
-          'logo':      (data['logoUrl'] ?? '').toString(),
+          'id': doc.id,
+          'name': (data['name'] ?? 'Unknown Team').toString(),
+          'logo': (data['logoUrl'] ?? '').toString(),
           'createdAt': data['createdAt'],
         };
       }).toList();
@@ -283,7 +340,10 @@ Future<void> _searchData(String query) async {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-              child: _TopBar(controller: _searchController, onChanged: _searchData),
+              child: _TopBar(
+                controller: _searchController,
+                onChanged: _searchData,
+              ),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -314,19 +374,28 @@ Future<void> _searchData(String query) async {
       children: [
         _buildSection(
           title: 'Players Spotlight',
-          onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaderboardPage())),
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const LeaderboardPage()),
+          ),
           content: _buildPlayersRow(),
         ),
         const SizedBox(height: 18),
         _buildSection(
           title: 'Upcoming Tournaments',
-          onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AllTournamentsPage())),
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AllTournamentsPage()),
+          ),
           content: _buildTournamentsGrid(),
         ),
         const SizedBox(height: 18),
         _buildSection(
           title: 'Explore Teams',
-          onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AcceptedTeamsPage())),
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AcceptedTeamsPage()),
+          ),
           content: _buildTeamsRow(),
         ),
       ],
@@ -338,19 +407,28 @@ Future<void> _searchData(String query) async {
       children: [
         _buildSection(
           title: 'Players Spotlight',
-          onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaderboardPage())),
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const LeaderboardPage()),
+          ),
           content: _buildPlayersRow(),
         ),
         const SizedBox(height: 18),
         _buildSection(
           title: 'All Tournaments',
-          onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AllTournamentsPage())),
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AllTournamentsPage()),
+          ),
           content: _buildTournamentsGrid(),
         ),
         const SizedBox(height: 18),
         _buildSection(
           title: 'Explore Teams',
-          onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AcceptedTeamsPage())),
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AcceptedTeamsPage()),
+          ),
           content: _buildTeamsRow(),
         ),
       ],
@@ -369,7 +447,11 @@ Future<void> _searchData(String query) async {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: _line),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 18, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Column(
@@ -378,10 +460,16 @@ Future<void> _searchData(String query) async {
           Row(
             children: [
               Expanded(
-                child: Text(title, style: const TextStyle(
-                  fontFamily: 'Inter', fontSize: 16,
-                  fontWeight: FontWeight.w700, color: _text, height: 1,
-                )),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: _text,
+                    height: 1,
+                  ),
+                ),
               ),
               _SeeAllPill(onTap: onSeeAll),
             ],
@@ -405,36 +493,31 @@ Future<void> _searchData(String query) async {
       children: searchResults.map((result) {
         final imageProvider = getProfileImage(result['image']);
         return GestureDetector(
-         onTap: () {
-  if (result['type'] == 'Player') {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ViewPlayerProfilePage(
-          userId: result['id'],
-        ),
-      ),
-    );
-  } else if (result['type'] == 'Team') {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ViewTeamPage(
-          teamId: result['id'],
-        ),
-      ),
-    );
-  } else if (result['type'] == 'Tournament') {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ViewTournamentPage(
-          tournamentId: result['id'],
-        ),
-      ),
-    );
-  }
-},
+          onTap: () {
+            if (result['type'] == 'Player') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ViewPlayerProfilePage(userId: result['id']),
+                ),
+              );
+            } else if (result['type'] == 'Team') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ViewTeamPage(teamId: result['id']),
+                ),
+              );
+            } else if (result['type'] == 'Tournament') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      ViewTournamentPage(tournamentId: result['id']),
+                ),
+              );
+            }
+          },
           child: Container(
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -450,7 +533,13 @@ Future<void> _searchData(String query) async {
                   backgroundColor: const Color(0xFFEFEFEF),
                   backgroundImage: imageProvider,
                   child: imageProvider == null
-                      ? Icon(result['type'] == 'Player' ? Icons.person : Icons.group, color: Colors.black38, size: 18)
+                      ? Icon(
+                          result['type'] == 'Player'
+                              ? Icons.person
+                              : Icons.group,
+                          color: Colors.black38,
+                          size: 18,
+                        )
                       : null,
                 ),
                 const SizedBox(width: 10),
@@ -458,10 +547,29 @@ Future<void> _searchData(String query) async {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(result['name'], maxLines: 1, overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: _text, height: 1.1)),
+                      Text(
+                        result['name'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: _text,
+                          height: 1.1,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(result['type'], style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w400, color: _muted, height: 1.1)),
+                      Text(
+                        result['type'],
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: _muted,
+                          height: 1.1,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -476,15 +584,17 @@ Future<void> _searchData(String query) async {
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // Players Row — rank number badge instead of trophy icon
-  //               red border for all (no gold)
+  // Players Row
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Widget _buildPlayersRow() {
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _fetchSpotlightPlayers(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(height: 110, child: Center(child: CircularProgressIndicator()));
+          return const SizedBox(
+            height: 110,
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
 
         final players = snapshot.data ?? [];
@@ -492,29 +602,36 @@ Future<void> _searchData(String query) async {
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(3, (i) {
-            final p             = (i < players.length) ? players[i] : null;
-            final img           = p == null ? null : getProfileImage(p['photo']);
+            final p = (i < players.length) ? players[i] : null;
+            final img = p == null ? null : getProfileImage(p['photo']);
             final topBadgeLabel = (p?['topBadgeLabel'] ?? '').toString();
-            final rank          = i + 1; // 1, 2, 3
+            final rank = i + 1; // 1, 2, 3
 
             return GestureDetector(
-              onTap: p == null ? null : () {
-                Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => ViewPlayerProfilePage(userId: p['id'])));
-              },
+              onTap: p == null
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              ViewPlayerProfilePage(userId: p['id']),
+                        ),
+                      );
+                    },
               child: Column(
                 children: [
-                  // Avatar with rank number badge in corner
+                 
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      // Red border for everyone (no gold)
+                     
                       _CircleStrokeImage(
                         size: 80,
                         borderWidth: 2.5,
                         imageProvider: img,
                       ),
-                      // Rank number in top-right corner
+                      
                       if (p != null)
                         Positioned(
                           top: -4,
@@ -560,15 +677,20 @@ Future<void> _searchData(String query) async {
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontFamily: 'Inter', fontSize: 12,
-                          fontWeight: FontWeight.w600, color: _text,
+                          fontFamily: 'Inter',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _text,
                         ),
                       ),
                     ),
                     if (topBadgeLabel.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: _accent.withOpacity(0.10),
                           borderRadius: BorderRadius.circular(999),
@@ -579,8 +701,10 @@ Future<void> _searchData(String query) async {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontFamily: 'Inter', fontSize: 9,
-                            fontWeight: FontWeight.w800, color: _accent,
+                            fontFamily: 'Inter',
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: _accent,
                           ),
                         ),
                       ),
@@ -603,7 +727,10 @@ Future<void> _searchData(String query) async {
       future: _fetchLatestAcceptedTeams(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(height: 120, child: Center(child: CircularProgressIndicator()));
+          return const SizedBox(
+            height: 120,
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
 
         final teams = snapshot.data ?? [];
@@ -611,21 +738,35 @@ Future<void> _searchData(String query) async {
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(3, (i) {
-            final t   = (i < teams.length) ? teams[i] : null;
+            final t = (i < teams.length) ? teams[i] : null;
             final img = t == null ? null : getProfileImage(t['logo']);
 
             return GestureDetector(
-              onTap: t == null ? null : () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ViewTeamPage(teamId: t['id'])));
-              },
+              onTap: t == null
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ViewTeamPage(teamId: t['id']),
+                        ),
+                      );
+                    },
               child: Column(
                 children: [
-                  _CircleStrokeImage(size: 80, borderWidth: 2.5, imageProvider: img),
+                  _CircleStrokeImage(
+                    size: 80,
+                    borderWidth: 2.5,
+                    imageProvider: img,
+                  ),
                   const SizedBox(height: 8),
                   SizedBox(
                     width: 80,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: _accent.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(999),
@@ -638,8 +779,10 @@ Future<void> _searchData(String query) async {
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontFamily: 'Inter', fontSize: 11,
-                          fontWeight: FontWeight.w700, color: _accent,
+                          fontFamily: 'Inter',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: _accent,
                         ),
                       ),
                     ),
@@ -654,7 +797,7 @@ Future<void> _searchData(String query) async {
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // Tournaments — horizontal scroll, big image card
+  // Tournaments 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Widget _buildTournamentsGrid() {
     return StreamBuilder<QuerySnapshot>(
@@ -664,14 +807,23 @@ Future<void> _searchData(String query) async {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+          return const SizedBox(
+            height: 200,
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
         if (snapshot.hasError) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(20),
-              child: Text('Error loading tournaments',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: _muted)),
+              child: Text(
+                'Error loading tournaments',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  color: _muted,
+                ),
+              ),
             ),
           );
         }
@@ -679,14 +831,20 @@ Future<void> _searchData(String query) async {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(20),
-              child: Text('No tournaments yet',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: _muted)),
+              child: Text(
+                'No tournaments yet',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  color: _muted,
+                ),
+              ),
             ),
           );
         }
 
         final tournaments = snapshot.data!.docs;
-        final count       = tournaments.length > 5 ? 5 : tournaments.length;
+        final count = tournaments.length > 5 ? 5 : tournaments.length;
 
         return SizedBox(
           height: 210,
@@ -695,16 +853,16 @@ Future<void> _searchData(String query) async {
             itemCount: count,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              final t    = tournaments[index];
+              final t = tournaments[index];
               final data = t.data() as Map<String, dynamic>;
               return _TournamentCard(
                 tournamentId: t.id,
-                title:        data['Title']      ?? 'Tournament',
-                timeText:     data['time']       ?? '',
-                dateText:     data['date']       ?? '',
-                imageBase64:  data['image']      ?? '',
-                game:         data['game']       ?? '',
-                organizerId:  data['organizerID'] ?? '',
+                title: data['Title'] ?? 'Tournament',
+                timeText: data['time'] ?? '',
+                dateText: data['date'] ?? '',
+                imageBase64: data['image'] ?? '',
+                game: data['game'] ?? '',
+                organizerId: data['organizerID'] ?? '',
               );
             },
           ),
@@ -715,7 +873,7 @@ Future<void> _searchData(String query) async {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// TOURNAMENT CARD — big image top, info below
+// TOURNAMENT CARD
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class _TournamentCard extends StatelessWidget {
   final String tournamentId;
@@ -727,9 +885,9 @@ class _TournamentCard extends StatelessWidget {
   final String organizerId;
 
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
-  static const Color _text   = Color(0xFF0F1419);
-  static const Color _muted  = Color(0xFF536471);
-  static const Color _line   = Color(0xFFCFD9DE);
+  static const Color _text = Color(0xFF0F1419);
+  static const Color _muted = Color(0xFF536471);
+  static const Color _line = Color(0xFFCFD9DE);
 
   const _TournamentCard({
     required this.tournamentId,
@@ -737,26 +895,39 @@ class _TournamentCard extends StatelessWidget {
     required this.timeText,
     required this.dateText,
     this.imageBase64 = '',
-    this.game        = '',
+    this.game = '',
     this.organizerId = '',
   });
 
-  String _getGameLogo(String gameName) {
-    final g = gameName.toLowerCase();
-    if (g.contains('pubg'))                          return 'assets/images/pubg.png';
-    if (g.contains('lol') || g.contains('league'))  return 'assets/images/lol.png';
-    if (g.contains('valorant'))                      return 'assets/images/valorant.png';
-    if (g.contains('call of duty') || g.contains('cod')) return 'assets/images/cod.png';
-    if (g.contains('fortnite'))                      return 'assets/images/fortnite.png';
-    return 'assets/images/pubg.png';
+String _getGameLogo(String gameName) {
+  final g = gameName.toLowerCase();
+
+  if (g.contains('pubg')) return 'assets/images/pubg.png';
+
+  if (g.contains('lol') || g.contains('league')) {
+    return 'assets/images/lol.png';
   }
+
+  if (g.contains('call of duty') || g.contains('cod')) {
+    return 'assets/images/cod.png';
+  }
+  if (g.contains('dota') || g.contains('dota2')){
+  return 'assets/images/dota2.png';
+}
+
+ 
+
+  return '';
+}
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => ViewTournamentPage(tournamentId: tournamentId)),
+        MaterialPageRoute(
+          builder: (_) => ViewTournamentPage(tournamentId: tournamentId),
+        ),
       ),
       child: Container(
         width: 160,
@@ -765,7 +936,11 @@ class _TournamentCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _line),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         clipBehavior: Clip.hardEdge,
@@ -783,11 +958,12 @@ class _TournamentCard extends StatelessWidget {
                       ? Image.memory(
                           base64Decode(imageBase64),
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _PlaceholderBg(game: game),
+                          errorBuilder: (_, __, ___) =>
+                              _PlaceholderBg(game: game),
                         )
                       : _PlaceholderBg(game: game),
                 ),
-                // Dark gradient so text would be readable if needed
+                
                 Positioned.fill(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
@@ -802,18 +978,24 @@ class _TournamentCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Game logo pill — bottom-left of image
+                // Game logo pill 
                 if (game.isNotEmpty)
                   Positioned(
                     bottom: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.92),
                         borderRadius: BorderRadius.circular(999),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 6),
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 6,
+                          ),
                         ],
                       ),
                       child: Row(
@@ -822,12 +1004,16 @@ class _TournamentCard extends StatelessWidget {
                           SizedBox(
                             width: 16,
                             height: 16,
-                            child: Image.asset(
-                              _getGameLogo(game),
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) =>
-                                  Icon(Icons.sports_esports_rounded, color: _accent, size: 14),
-                            ),
+                            child: _getGameLogo(game).isNotEmpty
+                                ? Image.asset(
+                                    _getGameLogo(game),
+                                    fit: BoxFit.contain,
+                                  )
+                                : Icon(
+                                    Icons.sports_esports_rounded,
+                                    color: _accent,
+                                    size: 16,
+                                  ),
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -870,7 +1056,11 @@ class _TournamentCard extends StatelessWidget {
                     // Time & date row
                     Row(
                       children: [
-                        const Icon(Icons.access_time_rounded, size: 11, color: _muted),
+                        const Icon(
+                          Icons.access_time_rounded,
+                          size: 11,
+                          color: _muted,
+                        ),
                         const SizedBox(width: 3),
                         Flexible(
                           child: Text(
@@ -878,8 +1068,10 @@ class _TournamentCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontFamily: 'Inter', fontSize: 10,
-                              fontWeight: FontWeight.w500, color: _muted,
+                              fontFamily: 'Inter',
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: _muted,
                             ),
                           ),
                         ),
@@ -888,7 +1080,11 @@ class _TournamentCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Row(
                       children: [
-                        const Icon(Icons.calendar_month_rounded, size: 11, color: _muted),
+                        const Icon(
+                          Icons.calendar_month_rounded,
+                          size: 11,
+                          color: _muted,
+                        ),
                         const SizedBox(width: 3),
                         Flexible(
                           child: Text(
@@ -896,8 +1092,10 @@ class _TournamentCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontFamily: 'Inter', fontSize: 10,
-                              fontWeight: FontWeight.w500, color: _muted,
+                              fontFamily: 'Inter',
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: _muted,
                             ),
                           ),
                         ),
@@ -918,7 +1116,6 @@ class _TournamentCard extends StatelessWidget {
   }
 }
 
-// Placeholder when no image
 class _PlaceholderBg extends StatelessWidget {
   final String game;
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
@@ -930,32 +1127,40 @@ class _PlaceholderBg extends StatelessWidget {
     return Container(
       color: const Color(0xFFFFEDE9),
       child: Center(
-        child: Icon(Icons.sports_esports_rounded, color: _accent.withOpacity(0.3), size: 40),
+        child: Icon(
+          Icons.sports_esports_rounded,
+          color: _accent.withOpacity(0.3),
+          size: 40,
+        ),
       ),
     );
   }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ORGANIZER CHIP  (compact, shown at bottom of card)
+// ORGANIZER CHIP  
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class _OrganizerChip extends StatelessWidget {
   final String organizerId;
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
-  static const Color _text   = Color(0xFF0F1419);
-  static const Color _line   = Color(0xFFCFD9DE);
+  static const Color _text = Color(0xFF0F1419);
+  static const Color _line = Color(0xFFCFD9DE);
 
   const _OrganizerChip({required this.organizerId});
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('Organizer').doc(organizerId).get(),
+      future: FirebaseFirestore.instance
+          .collection('Organizer')
+          .doc(organizerId)
+          .get(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData || !snapshot.data!.exists) return const SizedBox.shrink();
-        final data          = snapshot.data!.data() as Map<String, dynamic>;
-        final name          = (data['Name'] ?? 'Organizer').toString();
-        final photo         = (data['ProfilePhoto'] ?? '').toString();
+        if (!snapshot.hasData || !snapshot.data!.exists)
+          return const SizedBox.shrink();
+        final data = snapshot.data!.data() as Map<String, dynamic>;
+        final name = (data['Name'] ?? 'Organizer').toString();
+        final photo = (data['ProfilePhoto'] ?? '').toString();
         final imageProvider = getProfileImage(photo);
 
         return Row(
@@ -1002,13 +1207,13 @@ class _OrganizerChip extends StatelessWidget {
 
 class _TopBar extends StatelessWidget {
   final TextEditingController controller;
-  final ValueChanged<String>  onChanged;
+  final ValueChanged<String> onChanged;
 
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
-  static const Color _text   = Color(0xFF0F1419);
-  static const Color _muted  = Color(0xFF536471);
-  static const Color _chip   = Color(0xFFF0F3F4);
-  static const Color _line   = Color(0xFFCFD9DE);
+  static const Color _text = Color(0xFF0F1419);
+  static const Color _muted = Color(0xFF536471);
+  static const Color _chip = Color(0xFFF0F3F4);
+  static const Color _line = Color(0xFFCFD9DE);
 
   const _TopBar({required this.controller, required this.onChanged});
 
@@ -1032,14 +1237,18 @@ class _TopBar extends StatelessWidget {
               onChanged: onChanged,
               cursorColor: _accent,
               style: const TextStyle(
-                fontFamily: 'Inter', fontSize: 14,
-                fontWeight: FontWeight.w400, color: _text,
+                fontFamily: 'Inter',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: _text,
               ),
               decoration: const InputDecoration(
                 hintText: 'Search players, teams, organizers, tournaments...',
                 hintStyle: TextStyle(
-                  fontFamily: 'Inter', fontSize: 14,
-                  fontWeight: FontWeight.w400, color: _muted,
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: _muted,
                 ),
                 border: InputBorder.none,
                 isDense: true,
@@ -1067,23 +1276,32 @@ class _SeeAllPill extends StatelessWidget {
       child: Container(
         height: 28,
         padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(color: _accent, borderRadius: BorderRadius.circular(999)),
+        decoration: BoxDecoration(
+          color: _accent,
+          borderRadius: BorderRadius.circular(999),
+        ),
         alignment: Alignment.center,
-        child: const Text('See all', style: TextStyle(
-          fontFamily: 'Inter', fontSize: 12,
-          fontWeight: FontWeight.w700, color: Colors.white, height: 1,
-        )),
+        child: const Text(
+          'See all',
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            height: 1,
+          ),
+        ),
       ),
     );
   }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// CIRCLE STROKE IMAGE — always red border, no gold
+// CIRCLE STROKE IMAGE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class _CircleStrokeImage extends StatelessWidget {
-  final double         size;
-  final double         borderWidth;
+  final double size;
+  final double borderWidth;
   final ImageProvider? imageProvider;
 
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
@@ -1111,7 +1329,12 @@ class _CircleStrokeImage extends StatelessWidget {
           color: const Color(0xFFEFEFEF),
           child: imageProvider == null
               ? const Icon(Icons.person, color: Colors.black38, size: 26)
-              : Image(image: imageProvider!, width: inner, height: inner, fit: BoxFit.cover),
+              : Image(
+                  image: imageProvider!,
+                  width: inner,
+                  height: inner,
+                  fit: BoxFit.cover,
+                ),
         ),
       ),
     );
