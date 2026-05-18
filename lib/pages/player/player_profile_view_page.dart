@@ -99,7 +99,7 @@ class _ViewPlayerProfilePageState extends State<ViewPlayerProfilePage> {
   );
 }
 
-  // ---- helpers (flexible field reading) ----
+  // ---- helpers ----
 
   String _s(Map<String, dynamic> m, List<String> keys, {String fallback = ''}) {
     for (final k in keys) {
@@ -1032,7 +1032,7 @@ class _ViewGameDashboard extends StatelessWidget {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// LOL RADAR (same colab normalization)
+// LOL RADAR 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _LolRadarDashboard extends StatelessWidget {
@@ -1213,7 +1213,7 @@ class _PubgRadarDashboard extends StatelessWidget {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// DOTA2 RADAR (based on your saved fields)
+// DOTA2 RADAR 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _DotaRadarDashboard extends StatelessWidget {
@@ -1308,7 +1308,7 @@ class _DotaRadarDashboard extends StatelessWidget {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// RADAR STAR (white bg, orange polygon)
+// RADAR STAR 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _RadarStar extends StatelessWidget {
