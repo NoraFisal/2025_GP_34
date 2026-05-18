@@ -26,7 +26,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
 
   DateTime? _dob;
 
-  /// ✅ store CANONICAL ids ONLY: lol / pubg / dota2
+  /// store CANONICAL ids ONLY: lol / pubg / dota2
   final Set<String> _gameIds = {};
 
   String _currentPhotoB64 = '';
@@ -53,7 +53,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
   bool _autoPopupOpen = false;
 
   // ─────────────────────────────────────────────
-  // ✅ Game canonicalization (logic only)
+  // Game canonicalization 
   // ─────────────────────────────────────────────
 
   String _normalizeGameId(String raw) {
@@ -74,7 +74,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     // Dota variants
     if (s == 'dota' || s == 'dota2' || s == 'dota 2') return 'dota2';
 
-    // ✅ block valorant
+    
     if (s == 'valorant' || s == 'val') return '';
 
     return s;
@@ -108,7 +108,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
         _nameCtrl.text = me.username;
         _cityCtrl.text = me.city;
 
-        // ✅ normalize from service games into canonical ids
+        // normalize from service games into canonical ids
         _gameIds
           ..clear()
           ..addAll(
@@ -149,7 +149,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
           _showCity = _cityCtrl.text.trim().isNotEmpty;
         }
 
-        // ✅ Prefer canonical list if present
+        // Prefer canonical list if present
         final ids = data['gameIds'];
         if (ids is List) {
           _gameIds
@@ -276,7 +276,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     return null;
   }
 
-  // ===== Auto popup (like signup, but without OK) =====
+  // ===== Auto popup =====
   Future<void> _showAutoPopup(
     String message, {
     bool success = false,
@@ -387,11 +387,11 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
         photoB64 = base64Encode(_pickedBytes!);
       }
 
-      // ✅ convert ids -> labels for legacy fields
+     
       final ids = _gameIds.toList();
       final labels = ids.map(_gameLabelFromId).toList();
 
-      // Update service (expects games as strings)
+   
       await PlayerService.updateMe(
         username: _nameCtrl.text.trim(),
         age: computedAge ?? 18,
@@ -400,14 +400,14 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
         profilePhoto: photoB64,
       );
 
-      // Update Firestore for BOTH new + legacy keys
+     
       final update = <String, dynamic>{
         // New keys
         'username': _nameCtrl.text.trim(),
         'city': _cityCtrl.text.trim(),
         'age': computedAge ?? 18,
-        'gameIds': ids,          // ✅ canonical (what profile should read)
-        'games': labels,         // ✅ display list
+        'gameIds': ids,         
+        'games': labels,         
         'profilePhoto': photoB64,
 
         // Legacy keys
@@ -453,7 +453,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     }
   }
 
-  // ===== Typography (same style as signup) =====
+  // ===== Typography  =====
   TextStyle get _titleStyle => const TextStyle(
         fontFamily: 'Inter',
         fontSize: 28,
@@ -647,9 +647,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
                             ),
                             const SizedBox(height: 12),
 
-                            // ✅ SAME DESIGN (CheckboxListTile) — ONLY content changed:
-                            // - Valorant removed
-                            // - PUBG added
+                           
                             Container(
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               decoration: _xCard(),
@@ -740,7 +738,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     );
   }
 
-  /// ✅ SAME UI, but checkbox toggles canonical id
+
   Widget _gameTile(String id) {
     final label = _gameLabelFromId(id);
     final checked = _gameIds.contains(id);
@@ -772,8 +770,8 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
       ),
       controlAffinity: ListTileControlAffinity.leading,
       fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-        if (states.contains(MaterialState.selected)) return _accent;  // أحمر بدل _dark
-  return Colors.white;
+        if (states.contains(MaterialState.selected)) return _dark;
+        return Colors.white;
       }),
       checkColor: Colors.white,
       side: const BorderSide(color: _line, width: 2),
@@ -835,7 +833,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
   }
 }
 
-// ===== Custom switch to match X style (white OFF track + border) =====
+
 class XSwitch extends StatelessWidget {
   const XSwitch({
     super.key,
@@ -859,8 +857,8 @@ class XSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final disabled = onChanged == null;
 
-    final trackColor = value ? accent : const Color(0xFFD1D5DB);  // أحمر ON، رمادي OFF
-final thumbColor = Colors.white;  // الدائرة دايمًا بيضاء
+    final trackColor = value ? onTrack : offTrack;
+    final thumbColor = value ? Colors.white : accent;
 
     return Opacity(
       opacity: disabled ? 0.65 : 1,
@@ -875,7 +873,7 @@ final thumbColor = Colors.white;  // الدائرة دايمًا بيضاء
           decoration: BoxDecoration(
             color: trackColor,
             borderRadius: BorderRadius.circular(999),
-            
+            border: Border.all(color: border, width: 2),
           ),
           child: AnimatedAlign(
             duration: const Duration(milliseconds: 160),
