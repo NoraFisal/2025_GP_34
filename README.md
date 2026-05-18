@@ -17,7 +17,7 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 =======
 <p align="center">
-  <img src="https://github.com/NoraFisal/2025_GP_34/blob/main/SPARK_Logo.png" width="180">
+  <img src="https://github.com/NoraFisal/2025_GP_34/SPARK_Logo.png" width="180">
 </p>
 
 <h1 align="center">SPARK – Esports AI Platform</h1>
