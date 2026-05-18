@@ -6,7 +6,8 @@
 
 ---
 
-## 📌 Overview
+## Overview
+
 SPARK is an AI-powered esports platform designed to help Saudi players, teams, and organizers connect, form professional teams, and analyze team performance using machine-learning insights.
 
 The platform predicts team win probability, generates the top 3 optimal lineups, and provides a clean, user-friendly mobile app experience built with Flutter and Firebase.
@@ -19,7 +20,8 @@ This repository contains:
 
 ---
 
-## 🎯 Project Goal
+## Project Goal
+
 To provide an intelligent esports environment that:
 
 - Helps players showcase skills professionally  
@@ -30,7 +32,7 @@ To provide an intelligent esports environment that:
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 ### Frontend
 - Flutter (Dart)
@@ -55,7 +57,7 @@ To provide an intelligent esports environment that:
 
 ---
 
-# 🚀 SPARK – Launching Instructions
+# SPARK – Launching Instructions
 
 Follow these steps to set up and run the project correctly on your machine.
 
@@ -85,13 +87,13 @@ flutter pub get
 
 ---
 
-## 4. Download Required ML Model Files (IMPORTANT)
+## 4. Download Required ML Model Files
 
-GitHub does NOT include the machine-learning model files because they exceed GitHub’s size limit.
+GitHub does NOT include the machine-learning model files because they exceed GitHub’s file size limit.
 
 Download the required model files from Google Drive:
 
-### Model Files
+Model Files:
 https://drive.google.com/drive/folders/1v3Zo-baUsxC8qw4N_H9L36EYDMnDUK2G
 
 After downloading, place the files inside:
@@ -100,7 +102,7 @@ After downloading, place the files inside:
 assets/model/
 ```
 
-### Required Files
+Required files:
 - random_forest_v5.json  
 - feature_means_v5.json  
 - feature_cols_v5.txt  
@@ -113,9 +115,9 @@ flutter pub get
 
 ---
 
-## 5. Riot API Key (REQUIRED)
+## 5. Riot API Key
 
-To run SPARK, you MUST generate your own Riot API Key.
+To run SPARK, you must generate your own Riot API Key.
 
 ### Step 1 — Create a Riot Developer Account
 
@@ -147,7 +149,7 @@ Click:
 Generate New Key
 ```
 
-### Important Notes
+Important notes:
 - Riot API keys expire every 24 hours  
 - You must regenerate a new key daily while testing  
 - Without a valid key, SPARK cannot fetch Riot data  
@@ -198,7 +200,7 @@ flutter run
 
 ---
 
-## ✔️ You're All Set!
+## Final Notes
 
 If you need help with:
 - API setup  
