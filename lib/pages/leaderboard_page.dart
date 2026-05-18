@@ -45,33 +45,21 @@ class _BadgeVisual {
 class _BadgeFactory {
   static const Map<String, _BadgeVisual> _visuals = {
     'trophy': _BadgeVisual(
-      icon: Icons.emoji_events_rounded,
-      color: Color(0xFFEB3D24),
-      bg: Color(0xFFFFEDE9)),
-  'diamond': _BadgeVisual(
-      icon: Icons.diamond_rounded,
-      color: Color(0xFF1976D2),      // أزرق
-      bg: Color(0xFFE3F2FD)),
-  'gold': _BadgeVisual(
-      icon: Icons.military_tech_rounded,
-      color: Color(0xFFB8860B),      // ذهبي
-      bg: Color(0xFFFFF8E1)),
-  'silver': _BadgeVisual(
-      icon: Icons.military_tech_rounded,
-      color: Color(0xFF757575),      // فضي
-      bg: Color(0xFFF5F5F5)),
-  'bronze': _BadgeVisual(
-      icon: Icons.military_tech_rounded,
-      color: Color(0xFF8D5524),      // برونزي
-      bg: Color(0xFFF3E5D8)),
-  'fire': _BadgeVisual(
-      icon: Icons.local_fire_department,
-      color: Color(0xFFE64A19),      // برتقالي
-      bg: Color(0xFFFFF3E0)),
-  'medal': _BadgeVisual(
-      icon: Icons.military_tech_rounded,
-      color: Color(0xFF9E9E9E),      // رمادي (بدون رتبة)
-      bg: Color(0xFFF5F5F5)),
+        icon: Icons.emoji_events_rounded,
+        color: Color(0xFFEB3D24),
+        bg: Color(0xFFFFEDE9)),
+    'diamond': _BadgeVisual(
+        icon: Icons.diamond_rounded,
+        color: Color(0xFF1565C0),
+        bg: Color(0xFFE3F2FD)),
+    'fire': _BadgeVisual(
+        icon: Icons.local_fire_department,
+        color: Color(0xFFE64A19),
+        bg: Color(0xFFFFF0EB)),
+    'medal': _BadgeVisual(
+        icon: Icons.military_tech_rounded,
+        color: Color(0xFFE8790A),
+        bg: Color(0xFFFFF3E0)),
   };
 
   static _BadgeVisual visualFor(String type) =>
@@ -92,21 +80,15 @@ class _BadgeFactory {
       final team = (bd['teamName'] ?? '').toString();
       detail = team.isNotEmpty ? '"$team" · $wr% WR' : '$wr% team WR';
     } else if (type == 'win_rate_rank') {
-  // اختر iconType حسب الرتبة
-  if (label == 'Diamond')     iconType = 'diamond';
-  else if (label == 'Gold')   iconType = 'gold';
-  else if (label == 'Silver') iconType = 'silver';
-  else if (label == 'Bronze') iconType = 'bronze';
-  else                        iconType = 'medal';   // بدون رتبة → رمادي
-
-  final wr    = (bd['winRate']    as num?)?.toStringAsFixed(1) ?? '0';
-  final games = (bd['totalGames'] as num?)?.toString()         ?? '0';
-  detail = '$wr% win rate · $games matches';
-  if (label == 'Diamond')     score += 80;
-  else if (label == 'Gold')   score += 60;
-  else if (label == 'Silver') score += 40;
-  else if (label == 'Bronze') score += 20;
-} else if (type == 'streak') {
+      iconType = label == 'Diamond' ? 'diamond' : 'medal';
+      final wr    = (bd['winRate']    as num?)?.toStringAsFixed(1) ?? '0';
+      final games = (bd['totalGames'] as num?)?.toString()         ?? '0';
+      detail = '$wr% win rate · $games matches';
+      if (label == 'Diamond')     score += 80;
+      else if (label == 'Gold')   score += 60;
+      else if (label == 'Silver') score += 40;
+      else if (label == 'Bronze') score += 20;
+    } else if (type == 'streak') {
       iconType = 'fire';
       final flames = (bd['flameCount'] as num?)?.toInt() ?? 0;
       final streak = (bd['streak']     as num?)?.toInt() ?? 0;
@@ -359,15 +341,13 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // PODIUM — all red (system accent colour)
+  // PODIUM 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Widget _buildPodium(List<_PlayerRank> players) {
     final p1 = players.isNotEmpty ? players[0] : null;
     final p2 = players.length > 1 ? players[1] : null;
     final p3 = players.length > 2 ? players[2] : null;
 
-    // All three podium spots share the same red accent.
-    // Platform heights differ so the visual hierarchy is preserved.
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: Row(
@@ -461,7 +441,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// PODIUM COLUMN  — single red accent, no crown icon
+// PODIUM COLUMN 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _PodiumCol extends StatelessWidget {
@@ -502,7 +482,7 @@ class _PodiumCol extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // ── NO crown icon (removed) ──
+         
 
           // Avatar
           Container(
@@ -770,7 +750,7 @@ class _PlayerCardState extends State<_PlayerCard> {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// BADGES ROW + CHIP  — fixed font size (10) for all labels
+// BADGES ROW + CHIP  
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _BadgesRow extends StatelessWidget {
@@ -815,12 +795,12 @@ class _BadgeChip extends StatelessWidget {
           Icon(_icons[badge.type] ?? Icons.military_tech_rounded,
               color: badge.color, size: 11),
           const SizedBox(width: 3),
-          // FIX: fixed font size so all badge labels look the same size
+         
           Text(
             badge.label,
             style: TextStyle(
               fontFamily: 'Inter',
-              fontSize: 10,           // ← fixed size for ALL badges
+              fontSize: 10,           
               fontWeight: FontWeight.w700,
               color: badge.color,
               letterSpacing: 0,
