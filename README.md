@@ -178,7 +178,56 @@ static const String apiKey = "RGAPI-12345678-abcd-90ef-1234-abcdef987654";
 
 ---
 
-## 6. Run the Application
+## 6. OpenRouter API Key for Spark Chatbot
+
+The chatbot feature requires an OpenRouter API Key.
+
+For security reasons, the API key is NOT included in this repository because GitHub blocks exposed secrets.
+
+### Step 1 — Create an OpenRouter Account
+
+Go to:
+
+https://openrouter.ai/activity
+
+Create an account or sign in.
+
+---
+
+### Step 2 — Generate Your API Key
+
+After signing in, generate your own OpenRouter API Key from your account.
+
+---
+
+### Step 3 — Add Your Key to the Project
+
+Open this file:
+
+```text
+lib/pages/player/report_chatbot_page.dart
+```
+
+Go to this line:
+
+```dart
+static const String _openRouterKey = 'YOUR_API_KEY';
+```
+
+Replace `YOUR_API_KEY` with your own OpenRouter API key.
+
+Example:
+
+```dart
+static const String _openRouterKey = 'sk-or-v1-your-key-here';
+```
+
+Important:
+Do NOT upload your real API key to GitHub. Replace it with `YOUR_API_KEY` before pushing any changes.
+
+---
+
+## 7. Run the Application
 
 ### Web (Edge)
 
