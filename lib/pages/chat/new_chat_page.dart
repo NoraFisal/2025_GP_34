@@ -1,5 +1,3 @@
-// 📄 lib/pages/chat/new_chat_page.dart
-
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -8,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../services/chat/unified_chat_service.dart';
-import '../team/create_team_page.dart'; // ✅ Import CreateTeamPage
+import '../team/create_team_page.dart';
 
 class NewChatPage extends StatefulWidget {
   const NewChatPage({super.key});
@@ -21,7 +19,6 @@ class _NewChatPageState extends State<NewChatPage> {
   String _query = '';
   final _auth = FirebaseAuth.instance;
 
-  // ✅ نفس ألوان HomePage و ChatListPage
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
   static const Color _bg = Color(0xFFFAFAFA);
   static const Color _text = Color(0xFF0F1419);
@@ -29,7 +26,107 @@ class _NewChatPageState extends State<NewChatPage> {
   static const Color _chip = Color(0xFFF0F3F4);
   static const Color _line = Color(0xFFCFD9DE);
 
-  /// Fetch all players and organizers
+  
+  Future<void> _showNoLinkDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            width: 320,
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _line),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _accent, width: 2),
+                  ),
+                  child: const Icon(
+                    Icons.link_off_rounded,
+                    color: _accent,
+                    size: 30,
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Title
+                const Text(
+                  'No Linked Account',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F1419),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Message
+                const Text(
+                  'You must link a game account before creating a team.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF536471),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+             
+                SizedBox(
+                  width: 100,
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _accent,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: const StadiumBorder(),
+                    ),
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Stream<List<QueryDocumentSnapshot>> _mergedUserStream() async* {
     final players =
         await FirebaseFirestore.instance.collection('Player').get();
@@ -69,7 +166,6 @@ class _NewChatPageState extends State<NewChatPage> {
       appBar: AppBar(
         backgroundColor: _bg,
         elevation: 0,
-        // ✅ نفس سهم الرجوع من ChatPage
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
@@ -78,7 +174,7 @@ class _NewChatPageState extends State<NewChatPage> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           'New Chat',
           style: TextStyle(
             fontFamily: 'Inter',
@@ -92,7 +188,6 @@ class _NewChatPageState extends State<NewChatPage> {
       body: Column(
         children: [
           const SizedBox(height: 16),
-          // Search bar - نفس حجم وتصميم ChatListPage
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Center(
@@ -142,73 +237,109 @@ class _NewChatPageState extends State<NewChatPage> {
           ),
           const SizedBox(height: 20),
 
-          // ✅ NEW TEAM OPTION - Simple button that navigates to CreateTeamPage
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: InkWell(
-              onTap: () {
-                // ✅ Navigate to CreateTeamPage
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const CreateTeamPage(),
-                  ),
-                );
-              },
-              borderRadius: BorderRadius.circular(18),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFCFCFC),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: _line),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
+          // ===== Create Team Button =====
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('Player')
+                .doc(currentUid)
+                .collection('linkedGames')
+                .limit(1)
+                .snapshots(),
+            builder: (context, linkedSnap) {
+              final isLinked = (linkedSnap.data?.docs.isNotEmpty) == true;
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Opacity(
+                  opacity: isLinked ? 1.0 : 0.45,
+                  child: InkWell(
+                    
+                    onTap: () {
+                      if (!isLinked) {
+                        _showNoLinkDialog(context);
+                        return;
+                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CreateTeamPage(),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(18),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: _accent, width: 2),
+                        color: const Color(0xFFFCFCFC),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: _line),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: CircleAvatar(
-                        radius: 26,
-                        backgroundColor: _accent.withOpacity(0.1),
-                        child: Icon(Icons.group_add, color: _accent, size: 26),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          Text(
-                            'New Team',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                              color: _text,
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isLinked ? _accent : _muted,
+                                width: 2,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 26,
+                              backgroundColor:
+                                  (isLinked ? _accent : _muted).withOpacity(0.1),
+                              child: Icon(
+                                Icons.group_add,
+                                color: isLinked ? _accent : _muted,
+                                size: 26,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'New Team',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                    color: isLinked ? _text : _muted,
+                                  ),
+                                ),
+                                if (!isLinked) ...[
+                                  const SizedBox(height: 3),
+                                  const Text(
+                                    'Link a game account first',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: _muted,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    // ❌ Removed arrow icon
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
           const SizedBox(height: 20),
 
-          // Divider with text
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -232,7 +363,6 @@ class _NewChatPageState extends State<NewChatPage> {
           ),
           const SizedBox(height: 20),
 
-          // User list
           Expanded(
             child: StreamBuilder<List<QueryDocumentSnapshot>>(
               stream: _mergedUserStream(),
@@ -244,9 +374,7 @@ class _NewChatPageState extends State<NewChatPage> {
                 }
 
                 final docs = snap.data!.where((d) {
-                  // Don't show current user
                   if (d.id == currentUid) return false;
-
                   final name = (d['Name'] ?? '').toString().toLowerCase();
                   return _query.isEmpty || name.contains(_query);
                 }).toList();
@@ -297,14 +425,10 @@ class _NewChatPageState extends State<NewChatPage> {
                       child: InkWell(
                         borderRadius: BorderRadius.circular(18),
                         onTap: () async {
-                          // Create or get existing chat
                           try {
-                            final chatId = await UnifiedChatService.createPrivateChat(uid);
-                            
+                            final chatId =
+                                await UnifiedChatService.createPrivateChat(uid);
                             if (!mounted) return;
-                            
-                            // Navigate to chat page
-                            Navigator.pop(context); // Close new chat page
                             Navigator.pushNamed(
                               context,
                               '/chat',
@@ -322,14 +446,10 @@ class _NewChatPageState extends State<NewChatPage> {
                         },
                         child: Row(
                           children: [
-                            // Avatar with border
                             Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: _accent,
-                                  width: 2,
-                                ),
+                                border: Border.all(color: _accent, width: 2),
                               ),
                               child: CircleAvatar(
                                 radius: 26,
@@ -341,7 +461,6 @@ class _NewChatPageState extends State<NewChatPage> {
                               ),
                             ),
                             const SizedBox(width: 14),
-                            // User info
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,7 +487,6 @@ class _NewChatPageState extends State<NewChatPage> {
                                 ],
                               ),
                             ),
-                            // ❌ Removed arrow icon
                           ],
                         ),
                       ),
