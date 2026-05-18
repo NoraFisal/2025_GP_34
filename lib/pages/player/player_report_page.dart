@@ -309,7 +309,7 @@ _MetaInfo(data: data),
         (m['reportFocus'] as Map?)?.cast<String, dynamic>();
 
   
-    // ✅ auto-create only if there is NO focus at all
+    //auto-create only if there is NO focus at all
 final reportFocusStatus = (reportFocus?['status'] ?? '').toString();
 final reportFocusTitle = (reportFocus?['title'] ?? '').toString().trim();
 final reportFocusUpdatedAt = _asDateTime(reportFocus?['updatedAt']);
@@ -819,10 +819,9 @@ height: _fabOpen ? 52 : 56,
   );
 }
 
-  /// Shows a bottom sheet listing the player's conversations.
-  ///
-  /// Direct mode  → send button per row → sends + navigates to that chat page.
-  /// Select mode  → multi-select → batch send → closes sheet (no navigation).
+  
+  
+  
   void _showChatPicker(BuildContext context, _ReportData data) {
     showModalBottomSheet(
       context: context,
@@ -840,19 +839,19 @@ height: _fabOpen ? 52 : 56,
             navigateToChat: navigateToChat,
           );
         },
-        // Multi-select mode: close sheet ONCE then send to all ids.
+       
         onBatchSelected: (ids, names) async {
-          Navigator.pop(sheetCtx); // close sheet exactly once
+          Navigator.pop(sheetCtx); 
           for (final id in ids) {
             await _sendReportToChat(
               context,
               data,
               id,
               names[id] ?? '',
-              navigateToChat: false, // stay on report page
+              navigateToChat: false, 
             );
           }
-          // Show a single combined confirmation.
+         
           if (context.mounted) {
             _showSentDialog(
               context,
@@ -877,7 +876,7 @@ height: _fabOpen ? 52 : 56,
     final now = DateFormat("d MMM yyyy • HH:mm").format(DateTime.now());
     final pct = (double v) => "${(v * 100).clamp(0, 100).toStringAsFixed(0)}%";
 
-    // Build structured report data for the card bubble
+  
     final reportData = <String, dynamic>{
       'gameTitle': _gameTitle(data.gameId),
       'matchCount': _recentN,
@@ -943,10 +942,10 @@ height: _fabOpen ? 52 : 56,
       if (!context.mounted) return;
 
       if (navigateToChat) {
-        // Direct mode: go straight to the chat page.
+       
         Navigator.pushNamed(context, '/chat', arguments: chatId);
       }
-      // Batch mode: caller (_showChatPicker) shows the combined dialog.
+  
     } catch (e) {
       if (context.mounted) {
         _showErrorDialog(context, '$e');
@@ -1216,7 +1215,7 @@ height: _fabOpen ? 52 : 56,
           ),
         );
 
-    // Key-value row inside a surface card
+    
     pw.Widget statRow(String label, String value, {bool isLast = false}) =>
         pw.Container(
           padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 9),
@@ -1241,7 +1240,7 @@ height: _fabOpen ? 52 : 56,
           ),
         );
 
-    // Card wrapper
+ 
     pw.Widget card(List<pw.Widget> children) => pw.Container(
           decoration: pw.BoxDecoration(
             color: pSurface,
@@ -2701,9 +2700,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
   String _search = '';
   final _ctrl = TextEditingController();
 
-  // When true → multi-select mode (tap toggles selection, send button appears).
-  // When false → direct mode (send button on each row sends immediately and
-  // navigates to that chat).
+  
   bool _selectMode = false;
 
   final Set<String> _selectedIds = {};
@@ -2741,8 +2738,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
   }
 
   void _sendToSelected() {
-    // Snapshot the selection, then fire a single batch callback so the sheet
-    // is closed exactly once regardless of how many chats are selected.
+    
     final ids = List<String>.from(_selectedIds);
     final names = Map<String, String>.from(_selectedNames);
     widget.onBatchSelected(ids, names);
@@ -2950,9 +2946,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                         final isSelected = _selectedIds.contains(chatId);
 
                         return GestureDetector(
-                          // In select-mode tapping the row toggles selection.
-                          // In direct-mode tapping the row does nothing —
-                          // only the send button acts.
+                          
                           onTap: _selectMode
                               ? () => _toggleSelection(chatId, name)
                               : null,
@@ -3040,8 +3034,6 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                                 ),
 
                                 // ── Action button ───────────────────────
-                                // Select-mode → checkbox circle
-                                // Direct-mode → send button (navigates)
                                 if (_selectMode)
                                   GestureDetector(
                                     onTap: () =>
@@ -3075,8 +3067,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                                 else
                                   GestureDetector(
                                     onTap: () {
-                                      // Send directly to this chat only,
-                                      // then navigate into the chat page.
+                                     
                                       widget.onChatSelected(chatId, name,
                                           navigateToChat: true);
                                     },
@@ -3104,7 +3095,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                 ),
               ),
 
-              // ── Send Button (select-mode only) ────────────────────────
+              // ── Send Button ────────────────────────
               AnimatedSize(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOut,
