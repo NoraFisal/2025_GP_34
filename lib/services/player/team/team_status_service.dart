@@ -2,7 +2,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-// ===== Palette — مطابق تماماً لـ SettingsPage =====
 const Color _accent = Color(0xFFEB3D24);
 const Color _bg    = Color(0xFFF7F7F7);
 const Color _text  = Color(0xFF0F1419);
@@ -12,9 +11,7 @@ const Color _line  = Color(0xFFCFD9DE);
 class TeamStatusService {
   static final _db = FirebaseFirestore.instance;
 
-  // ==========================================================
-  // Stream يُرجع كل التحديثات غير المشاهدة دفعةً واحدة
-  // ==========================================================
+ 
   static Stream<List<TeamStatusUpdate>> listenToUserTeamsAll(String userId) {
     return _db.collection('Team').snapshots().asyncMap((snapshot) async {
       final updates = <TeamStatusUpdate>[];
@@ -43,7 +40,6 @@ class TeamStatusService {
     });
   }
 
-  // للتوافق مع الكود القديم
   static Stream<TeamStatusUpdate?> listenToUserTeams(String userId) {
     return listenToUserTeamsAll(userId)
         .map((list) => list.isEmpty ? null : list.first);
@@ -55,9 +51,7 @@ class TeamStatusService {
     });
   }
 
-  // ==========================================================
-  // نقطة دخول واحدة — فريق واحد أو متعدد، نفس الشكل دائماً
-  // ==========================================================
+
   static void showBatchTeamStatusAlert(
     BuildContext context,
     List<TeamStatusUpdate> updates,
@@ -71,9 +65,7 @@ class TeamStatusService {
     }
   }
 
-  // ==========================================================
-  // Alert فريق واحد — نفس تنسيق Logout تماماً
-  // ==========================================================
+
   static void _showSingleAlert(
     BuildContext context,
     TeamStatusUpdate update,
@@ -106,7 +98,6 @@ class TeamStatusService {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Icon Circle — نفس حجم وشكل Logout
               Container(
                 width: 54,
                 height: 54,
@@ -122,7 +113,6 @@ class TeamStatusService {
               ),
               const SizedBox(height: 14),
 
-              // Message — نفس style الـ Logout
               Text(
                 isAccepted
                     ? 'All players accepted "${update.teamName}". Your team is now complete!'
@@ -138,7 +128,6 @@ class TeamStatusService {
               ),
               const SizedBox(height: 14),
 
-              // زر واحد — Got it
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -175,9 +164,7 @@ class TeamStatusService {
     );
   }
 
-  // ==========================================================
-  // Alert متعدد — نفس التنسيق بالضبط مع قائمة الفرق
-  // ==========================================================
+
   static void _showMultiAlert(
     BuildContext context,
     List<TeamStatusUpdate> updates,
@@ -211,7 +198,6 @@ class TeamStatusService {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Icon Circle — نفس حجم وشكل Logout
               Container(
                 width: 54,
                 height: 54,
@@ -241,7 +227,6 @@ class TeamStatusService {
               ),
               const SizedBox(height: 14),
 
-              // قائمة الفرق المقبولة
               if (accepted.isNotEmpty) ...[
                 _teamSection(
                   icon: Icons.check_circle_outline,
@@ -252,7 +237,6 @@ class TeamStatusService {
                 ),
               ],
 
-              // قائمة الفرق المرفوضة
               if (rejected.isNotEmpty) ...[
                 if (accepted.isNotEmpty) const SizedBox(height: 8),
                 _teamSection(
@@ -266,7 +250,6 @@ class TeamStatusService {
 
               const SizedBox(height: 14),
 
-              // زر Got it — نفس style الـ Logout
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -312,7 +295,6 @@ class TeamStatusService {
     );
   }
 
-  // Helper: صف فريق واحد
   static Widget _teamSection({
     required IconData icon,
     required String label,
@@ -358,7 +340,6 @@ class TeamStatusService {
     );
   }
 
-  // الدالتان القديمتان محفوظتان للتوافق
   static void showTeamStatusAlert(
     BuildContext context,
     TeamStatusUpdate update,
