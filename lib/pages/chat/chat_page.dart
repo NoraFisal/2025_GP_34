@@ -27,13 +27,13 @@ class _ChatPageState extends State<ChatPage> {
   final _db = FirebaseFirestore.instance;
   final _scrollCtrl = ScrollController();
 
-  // Optimistic messages shown immediately before Firestore confirms.
+  
   final List<_OptimisticMessage> _optimisticMessages = [];
 
   Uint8List? _pendingBytes;
   String? _pendingFileName;
 
-  // Profile cache local to this page (backed by service cache).
+  
   final Map<String, Map<String, String>> _localProfileCache = {};
 
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
@@ -46,7 +46,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    // Mark as read once on open, not on every build/message-list rebuild.
+    
     final uid = _auth.currentUser?.uid;
     if (uid != null) {
       UnifiedChatService.markChatAsRead(widget.chatId, uid);
@@ -309,8 +309,7 @@ class _ChatPageState extends State<ChatPage> {
 
         final firestoreMessages = snap.data!.docs;
 
-        // Pre-populate local profile cache from service cache so name
-        // rendering is instant without opening a new StreamBuilder per message.
+        
         for (final doc in firestoreMessages) {
           final data = doc.data() as Map<String, dynamic>;
           final senderId = data['senderId'] ?? '';
@@ -323,7 +322,7 @@ class _ChatPageState extends State<ChatPage> {
           }
         }
 
-        // Remove optimistic messages that have been confirmed by Firestore.
+        
         final confirmedTexts =
             firestoreMessages.map((d) => (d.data() as Map)['text'] ?? '').toSet();
         _optimisticMessages.removeWhere((m) => confirmedTexts.contains(m.text));
@@ -342,7 +341,7 @@ class _ChatPageState extends State<ChatPage> {
           );
         }
 
-        // Merge: real messages (reversed for ListView.reverse) + optimistic at top.
+       
         final reversedMessages = firestoreMessages.reversed.toList();
         final totalCount = reversedMessages.length + _optimisticMessages.length;
 
@@ -352,7 +351,7 @@ class _ChatPageState extends State<ChatPage> {
           padding: const EdgeInsets.all(10),
           itemCount: totalCount,
           itemBuilder: (context, i) {
-            // Show optimistic messages first (they appear at bottom = newest).
+            
             if (i < _optimisticMessages.length) {
               final opt = _optimisticMessages[_optimisticMessages.length - 1 - i];
               return _buildOptimisticBubble(opt, uid);
@@ -374,13 +373,13 @@ class _ChatPageState extends State<ChatPage> {
             final isMe = senderId == uid;
             final readBy = List<String>.from(msg['readBy'] ?? []);
 
-            // Use cached profile data — no StreamBuilder per message.
+            
             final profile = _localProfileCache[senderId] ??
                 {'name': 'User', 'photo': '', 'role': 'player'};
             final name = profile['name'] ?? 'User';
             final photo = profile['photo'] ?? '';
 
-            // If not cached yet, load asynchronously and rebuild once ready.
+            
             if (!_localProfileCache.containsKey(senderId)) {
               _loadProfileAndRebuild(senderId);
             }
@@ -430,7 +429,7 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  /// Loads a profile once and triggers a rebuild so the message shows the name.
+  
   void _loadProfileAndRebuild(String senderId) {
     UnifiedChatService.getUserProfileOnce(senderId).then((profile) {
       if (mounted && !_localProfileCache.containsKey(senderId)) {
@@ -439,7 +438,7 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  /// Shown immediately after sending — disappears once Firestore confirms.
+  
   Widget _buildOptimisticBubble(_OptimisticMessage opt, String uid) {
     return Align(
       alignment: Alignment.centerRight,
@@ -1811,12 +1810,10 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  // null = no image staged; non-null = image ready to send
-  // true = image is oversized (show error state in preview)
+  
   bool _pendingImageTooLarge = false;
 
-  // Max bytes for the raw image (base64 expands ~33%, Firestore doc limit is 1MB,
-  // so we keep the raw file under 700KB to stay safely within that limit).
+
   static const int _maxImageBytes = 700 * 1024;
 
   Future<void> _pickImage() async {
@@ -1835,7 +1832,7 @@ class _ChatPageState extends State<ChatPage> {
     }
 
     if (bytes.lengthInBytes > _maxImageBytes) {
-      // Stage the image in error state — user sees it and can remove or pick another.
+      
       setState(() {
         _pendingBytes = bytes;
         _pendingFileName = picked.name;
@@ -1863,7 +1860,7 @@ class _ChatPageState extends State<ChatPage> {
         .collection('message')
         .doc();
 
-    // Run both writes in parallel.
+   
     await Future.wait([
       msgRef.set({
         'senderId': uid,
@@ -1889,13 +1886,13 @@ class _ChatPageState extends State<ChatPage> {
 
     if (text.isEmpty && !hasPending) return;
 
-    // Block send if the staged image exceeds the size limit.
+    
     if (_pendingImageTooLarge) return;
 
     final capturedBytes = _pendingBytes;
     final capturedFileName = _pendingFileName;
 
-    // Show optimistic message immediately — no waiting for Firestore.
+    
     if (text.isNotEmpty) {
       setState(() {
         _optimisticMessages.add(_OptimisticMessage(text: text));
@@ -1913,7 +1910,7 @@ class _ChatPageState extends State<ChatPage> {
 
     _msgCtrl.clear();
 
-    // Fire and forget — UI already updated optimistically.
+   
     _doSend(
       text: text,
       hasPending: hasPending,
@@ -1942,7 +1939,7 @@ class _ChatPageState extends State<ChatPage> {
             .collection('message')
             .doc();
 
-        // Run message write and chat update in parallel.
+       
         await Future.wait([
           msgRef.set({
             'senderId': uid,
@@ -1960,7 +1957,7 @@ class _ChatPageState extends State<ChatPage> {
         ]);
       }
     } catch (e) {
-      // Remove the optimistic message on failure.
+
       if (mounted) {
         setState(() {
           _optimisticMessages.removeWhere((m) => m.text == text);
