@@ -104,7 +104,7 @@ class _EditTournamentPageState extends State<EditTournamentPage> {
       return difference.inDays;
     } catch (e) {
       debugPrint('Error calculating days: $e');
-      return 999; // رقم كبير للسماح بالتعديل في حالة الخطأ
+      return 999;
     }
   }
 
@@ -134,7 +134,6 @@ class _EditTournamentPageState extends State<EditTournamentPage> {
     final data = snap.data()!;
     _originalData = Map.from(data);
 
-    // التحقق من الصلاحيات
     _organizerId = (data['organizerID'] ?? '').toString();
     _isOwner = _organizerId == user.uid;
 
@@ -179,7 +178,6 @@ class _EditTournamentPageState extends State<EditTournamentPage> {
     if (file == null) return;
     final bytes = await file.readAsBytes();
 
-    // التحقق من حجم الصورة (حد أقصى 5 MB)
     const maxSize = 5 * 1024 * 1024; // 5 MB
     if (bytes.length > maxSize) {
       await _showAutoPopup("Image size too large (max 5 MB)", danger: true);
@@ -222,7 +220,6 @@ class _EditTournamentPageState extends State<EditTournamentPage> {
       setState(() {
         _dateCtrl.text = DateFormat('yyyy-MM-dd').format(picked);
 
-        // إعادة حساب إمكانية التعديل
         final daysRemaining = _calculateDaysRemaining(_dateCtrl.text);
         _canEditDateTime = daysRemaining > 3;
 
@@ -561,12 +558,10 @@ class _EditTournamentPageState extends State<EditTournamentPage> {
       return;
     }
 
-    // التحقق من صيغة التاريخ
     try {
       final parsedDate = DateFormat('yyyy-MM-dd').parse(date);
       final now = DateTime.now();
 
-      // التحقق من أن التاريخ ليس في الماضي
       if (parsedDate.isBefore(DateTime(now.year, now.month, now.day))) {
         await _showAutoPopup(
           "Tournament date cannot be in the past",
@@ -575,7 +570,6 @@ class _EditTournamentPageState extends State<EditTournamentPage> {
         return;
       }
 
-      // التحقق من قيود تعديل التاريخ
       final daysRemaining = _calculateDaysRemaining(date);
       if (date != _originalData!['date'] && daysRemaining <= 3) {
         await _showAutoPopup(
