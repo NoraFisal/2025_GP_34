@@ -138,7 +138,7 @@ class LeaderboardPage extends StatefulWidget {
 
 class _LeaderboardPageState extends State<LeaderboardPage> {
   // ── colour palette ────────────────────────────
-  static const Color _accent = Color.fromRGBO(235, 61, 36, 1); // red (system accent)
+  static const Color _accent = Color.fromRGBO(235, 61, 36, 1); 
   static const Color _bg     = Color(0xFFFAFAFA);
   static const Color _text   = Color(0xFF0F1419);
   static const Color _muted  = Color(0xFF536471);
