@@ -1,19 +1,4 @@
 // lib/pages/player/connect_game_page.dart
-//
-// Connect Game page (Swipeable cards) + Progress dialog (no SnackBars)
-// Supports:
-// ✅ LoL  (RiotLinkService you already have)
-// ✅ PUBG (PUBG Developer API — needs key; may fail on Flutter Web due to CORS)
-// ✅ Dota2 (OpenDota — NO API KEY needed)
-//
-// Firestore writes:
-// Player/{uid}/linkedGames/{lol|pubg|dota2}
-// Player/{uid}/linkedGames/pubg/matches/{matchId}
-// Player/{uid}/linkedGames/dota2/matches/{matchId}
-//
-// NOTE ABOUT KEYS:
-// - Dota2 via OpenDota = NO KEY.
-// - PUBG = you paste key ONLY in _pubgKey below (for testing).
 
 import 'dart:async';
 import 'dart:convert';
@@ -59,7 +44,7 @@ class _ConnectGamePageState extends State<ConnectGamePage> {
   PubgPlatform _pubgPlatform = PubgPlatform.steam;
 
   // Dota2
-  final _dotaQueryCtrl = TextEditingController(); // Steam32 (account_id) OR name
+  final _dotaQueryCtrl = TextEditingController(); 
 
   // Theme
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
@@ -482,7 +467,7 @@ Future<void> _ensureGameAccountNotUsed({
   }
 }
   // ─────────────────────────────────────────────────────────────
-  // PUBG (needs key)
+  // PUBG 
   // ─────────────────────────────────────────────────────────────
 
   Map<String, String> _pubgHeaders() {
@@ -812,7 +797,7 @@ Future<void> _ensureGameAccountNotUsed({
   }
 
   // ─────────────────────────────────────────────────────────────
-  // Dota2 (OpenDota — NO KEY)
+  // Dota2 
   // ─────────────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> _dotaFetchRecentMatches(int accountId, {int limit = 20}) async {
@@ -1061,8 +1046,7 @@ print('LINKED DOTA: uid=$uid query=$q accountId=$accountId');
       },
     );
 
-    // ✅ التعديل المضاف هنا
-  // بعد ✅
+    
 await computeAndSyncBadgesGlobal(uid);
 if (!mounted) return;
 Navigator.pop(context);
