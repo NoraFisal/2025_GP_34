@@ -190,7 +190,6 @@ class _APageState extends State<APage> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // السهم - ثابت الحجم
                       IconButton(
                         visualDensity: VisualDensity.compact,
                         padding: EdgeInsets.zero,
@@ -201,7 +200,6 @@ class _APageState extends State<APage> {
                       ),
                       const SizedBox(width: 4),
 
-                      // العنوان - يتكيف مع حجم الشاشة
                       Expanded(
   child: Center(
     child: FittedBox(
@@ -215,7 +213,6 @@ class _APageState extends State<APage> {
 ),
                       const SizedBox(width: 8),
 
-                      // اللوقو 60x60
                       Image.asset(
                         'assets/images/Logo.png',
                         width: 75,
