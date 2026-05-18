@@ -29,15 +29,11 @@ class _ChatListPageState extends State<ChatListPage> {
   StreamSubscription<List<TeamStatusUpdate>>? _teamStatusSub;
   bool _alertIsShowing = false;
 
-  // FIX: Streams are created once in initState and reused — never recreated on rebuild.
-  // Creating streams inside StreamBuilder causes a new StreamController on every
-  // rebuild, which means the old subscription is dropped before the new one emits,
-  // making the green dot appear stale until a navigation round-trip forces a fresh build.
+  
   late final Stream<bool> _chatsUnreadStream;
   late final Stream<bool> _requestsUnreadStream;
 
-  // Cached latest values so the tab bar reads instantly without waiting for
-  // the next stream event after a setState (e.g. tab switch).
+
   bool _chatsHasUnread = false;
   bool _requestsHasUnread = false;
 
@@ -59,12 +55,11 @@ class _ChatListPageState extends State<ChatListPage> {
     super.initState();
     _index = widget.initialTab ?? 0;
 
-    // Create streams once and hold references for the lifetime of the widget.
+    
     _chatsUnreadStream = UnifiedChatService.listenChatsHasUnread();
     _requestsUnreadStream = UnifiedChatService.listenRequestsHasUnread();
 
-    // Subscribe and cache values so setState rebuilds reflect the latest state
-    // immediately, without waiting for the stream to re-emit.
+  
     _chatsUnreadSub = _chatsUnreadStream.listen((value) {
       if (mounted && _chatsHasUnread != value) {
         setState(() => _chatsHasUnread = value);
@@ -200,9 +195,7 @@ class _ChatListPageState extends State<ChatListPage> {
               ),
               const SizedBox(height: 20),
 
-              // FIX: _buildTabsBar now reads from cached bool values (_chatsHasUnread,
-              // _requestsHasUnread) instead of creating new StreamBuilders that spin up
-              // fresh StreamControllers on every rebuild.
+             
               if (!isOrganizer) _buildTabsBar(),
 
               const SizedBox(height: 20),
@@ -226,9 +219,7 @@ class _ChatListPageState extends State<ChatListPage> {
   }
 
   Widget _buildTabsBar() {
-    // Reads directly from cached state — no StreamBuilder needed here.
-    // The subscriptions in initState keep _chatsHasUnread / _requestsHasUnread
-    // up to date and call setState, so this rebuilds instantly on any change.
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -407,9 +398,8 @@ class _ChatListPageState extends State<ChatListPage> {
       }
     }
 
-    // Each chat card keeps its own single StreamBuilder for its unread dot.
-    // This is correct because each card maps to a distinct chatId — there is
-    // no rebuild-induced stream recreation here.
+   
+   
     return StreamBuilder<bool>(
       stream: UnifiedChatService.listenChatHasUnread(chat['id']),
       builder: (context, unreadSnap) {
@@ -961,9 +951,7 @@ class _ChatListPageState extends State<ChatListPage> {
   }
 }
 
-// ── Members Horizontal Row Widget ─────────────────────────────────────────────
-// Fetches all player data in parallel with Future.wait for maximum speed,
-// then shows avatars + role + status emoji in a horizontal scrollable row.
+
 class _MembersHorizontalRow extends StatefulWidget {
   final List<QueryDocumentSnapshot> members;
   final ImageProvider? Function(String) getImageProvider;
@@ -1049,7 +1037,7 @@ class _MembersHorizontalRowState extends State<_MembersHorizontalRow> {
   @override
   Widget build(BuildContext context) {
     if (!_loaded) {
-      // Placeholder row while loading — same height to avoid layout jump.
+      
       return SizedBox(
         height: 72,
         child: ListView.builder(
