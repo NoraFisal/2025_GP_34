@@ -1,6 +1,5 @@
-
 <p align="center">
-  <img src="./SPARK_Logo.png" width="180">
+  <img src="SPARK_Logo.png" width="180">
 </p>
 
 <h1 align="center">SPARK – Esports AI Platform</h1>
@@ -16,43 +15,45 @@ This repository contains:
 - Mobile app source code  
 - AI model integration files  
 - Project documentation  
-- Sprint-1 deliverables
+- Sprint-1 deliverables  
 
 ---
 
 ## 🎯 Project Goal
 To provide an intelligent esports environment that:
+
 - Helps players showcase skills professionally  
 - Helps teams form optimal lineups  
 - Supports organizers in tournaments  
 - Predicts team win probability using AI  
-- Enhances Saudi esports ecosystem aligned with Vision 2030  
+- Enhances the Saudi esports ecosystem aligned with Vision 2030  
 
 ---
 
 ## 🛠️ Technologies Used
-### **Frontend**
+
+### Frontend
 - Flutter (Dart)
 
-### **Backend**
+### Backend
 - Firebase Authentication  
 - Firebase Firestore  
 - Firebase Storage  
 
-### **AI & Data**
+### AI & Data
 - Python  
-- Pandas, NumPy  
+- Pandas  
+- NumPy  
 - Scikit-Learn (Random Forest Model)  
 - Riot Games API  
-- Kaggle datasets  
+- Kaggle Datasets  
 
-### **Design & Management**
+### Design & Management
 - Figma  
 - Jira  
 - GitHub  
 
 ---
-
 
 # 🚀 SPARK – Launching Instructions
 
@@ -61,13 +62,26 @@ Follow these steps to set up and run the project correctly on your machine.
 ---
 
 ## 1. Clone the Repository
+
+```bash
 git clone https://github.com/NoraFisal/2025_GP_34.git
+```
+
+---
 
 ## 2. Navigate to the Project Folder
+
+```bash
 cd 2025_GP_34
+```
+
+---
 
 ## 3. Install Flutter Dependencies
+
+```bash
 flutter pub get
+```
 
 ---
 
@@ -75,22 +89,27 @@ flutter pub get
 
 GitHub does NOT include the machine-learning model files because they exceed GitHub’s size limit.
 
-You must download them manually from Google Drive:
+Download the required model files from Google Drive:
 
-Model Files:
+### Model Files
 https://drive.google.com/drive/folders/1v3Zo-baUsxC8qw4N_H9L36EYDMnDUK2G
 
 After downloading, place the files inside:
 
+```text
 assets/model/
+```
 
-Required files:
-- random_forest_v5.json
-- feature_means_v5.json
-- feature_cols_v5.txt
+### Required Files
+- random_forest_v5.json  
+- feature_means_v5.json  
+- feature_cols_v5.txt  
 
-Then run:
+Then run again:
+
+```bash
 flutter pub get
+```
 
 ---
 
@@ -99,58 +118,92 @@ flutter pub get
 To run SPARK, you MUST generate your own Riot API Key.
 
 ### Step 1 — Create a Riot Developer Account
+
 Go to:
 https://developer.riotgames.com/
 
 Click:
-“Sign In” → “Create Account”
+- Sign In  
+- Create Account  
 
-Complete the registration.
+Complete the registration process.
+
+---
 
 ### Step 2 — Generate Your API Key
-After logging in, go to your dashboard:
+
+After logging in, open:
 https://developer.riotgames.com/apis
 
-You will find your API Key under:
-**"Development API Key"**
+You will find your key under:
+
+```text
+Development API Key
+```
 
 Click:
-**"Generate New Key"**
 
-Important Notes:
-- Riot API keys expire every **24 hours**.
-- You must regenerate a new key daily if you're testing the application.
-- Without a valid key, the application will NOT fetch Riot data.
+```text
+Generate New Key
+```
+
+### Important Notes
+- Riot API keys expire every 24 hours  
+- You must regenerate a new key daily while testing  
+- Without a valid key, SPARK cannot fetch Riot data  
+
+---
 
 ### Step 3 — Add Your Key to the Project
-Open the file:
 
+Open:
+
+```text
 lib/data/riot_link_service.dart
+```
 
-Update this line:
+Replace:
+
+```dart
 static const String apiKey = "PUT_YOUR_RIOT_API_KEY_HERE";
+```
 
 Example:
-static const String apiKey = "RGAPI-12345678-abcd-90ef-1234-abcdef987654";
 
-(Replace only the key, keep the quotation marks.)
+```dart
+static const String apiKey = "RGAPI-12345678-abcd-90ef-1234-abcdef987654";
+```
 
 ---
 
 ## 6. Run the Application
 
-Web (Edge):
+### Web (Edge)
+
+```bash
 flutter run -d edge
+```
 
-Web (Chrome):
+### Web (Chrome)
+
+```bash
 flutter run -d chrome
+```
 
-Mobile (Android/iOS):
+### Android / iOS
+
+```bash
 flutter run
+```
 
 ---
 
-## ✔️ You're all set!
-If you need help with API setup, screenshots for the README, or troubleshooting — just tell me.
+## ✔️ You're All Set!
 
->>>>>>> 87849e966cb28734c2b450c6b4883146d5009c1b
+If you need help with:
+- API setup  
+- README screenshots  
+- Troubleshooting  
+- Flutter setup  
+
+Feel free to reach out.
