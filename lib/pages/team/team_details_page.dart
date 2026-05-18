@@ -13,7 +13,11 @@ class TeamDetailsPage extends StatelessWidget {
   final String teamId;
   final String? teamName;
 
-  const TeamDetailsPage({super.key, required this.teamId, this.teamName});
+  const TeamDetailsPage({
+    super.key,
+    required this.teamId,
+    this.teamName,
+  });
 
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
   static const Color _dark = Color(0xFF363435);
@@ -36,10 +40,7 @@ class TeamDetailsPage extends StatelessWidget {
   }
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> _teamStream() {
-    return FirebaseFirestore.instance
-        .collection('Team')
-        .doc(teamId)
-        .snapshots();
+    return FirebaseFirestore.instance.collection('Team').doc(teamId).snapshots();
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> _membersStream() {
@@ -59,9 +60,7 @@ class TeamDetailsPage extends StatelessWidget {
           stream: _teamStream(),
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(color: _accent),
-              );
+              return const Center(child: CircularProgressIndicator(color: _accent));
             }
 
             final doc = snap.data;
@@ -148,9 +147,7 @@ class TeamDetailsPage extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    name.isEmpty
-                                        ? (teamName ?? 'Team Name')
-                                        : name,
+                                    name.isEmpty ? (teamName ?? 'Team Name') : name,
                                     style: const TextStyle(
                                       color: _text,
                                       fontSize: 20,
@@ -160,16 +157,11 @@ class TeamDetailsPage extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 6),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 5,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
                                       color: _accent.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: _accent.withOpacity(0.3),
-                                      ),
+                                      border: Border.all(color: _accent.withOpacity(0.3)),
                                     ),
                                     child: const Text(
                                       'Team',
@@ -193,8 +185,7 @@ class TeamDetailsPage extends StatelessWidget {
                                     await Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) =>
-                                            EditTeamPage(teamId: teamId),
+                                        builder: (_) => EditTeamPage(teamId: teamId),
                                       ),
                                     );
                                   },
@@ -205,25 +196,18 @@ class TeamDetailsPage extends StatelessWidget {
                                   icon: Icons.chat_bubble_outline_rounded,
                                   onTap: () async {
                                     try {
-                                      final membersSnap =
-                                          await FirebaseFirestore.instance
-                                              .collection('Team')
-                                              .doc(teamId)
-                                              .collection('Members')
-                                              .get();
+                                      final membersSnap = await FirebaseFirestore.instance
+                                          .collection('Team')
+                                          .doc(teamId)
+                                          .collection('Members')
+                                          .get();
 
-                                      final members = membersSnap.docs
-                                          .map((d) => d.id)
-                                          .toList();
+                                      final members = membersSnap.docs.map((d) => d.id).toList();
 
-                                      final chatSnap = await FirebaseFirestore
-                                          .instance
+                                      final chatSnap = await FirebaseFirestore.instance
                                           .collection('Chat')
                                           .where('type', isEqualTo: 'team')
-                                          .where(
-                                            'status',
-                                            isEqualTo: 'active',
-                                          ) // ← هذا هو اللي ينقص
+                                          .where('status', isEqualTo: 'active')  
                                           .where('teamId', isEqualTo: teamId)
                                           .limit(1)
                                           .get();
@@ -231,22 +215,12 @@ class TeamDetailsPage extends StatelessWidget {
                                       final chatId = chatSnap.docs.first.id;
 
                                       if (context.mounted) {
-                                        Navigator.pushNamed(
-                                          context,
-                                          '/chat',
-                                          arguments: chatId,
-                                        );
+                                        Navigator.pushNamed(context, '/chat', arguments: chatId);
                                       }
                                     } catch (e) {
                                       if (context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Failed to open team chat: $e',
-                                            ),
-                                          ),
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Failed to open team chat: $e')),
                                         );
                                       }
                                     }
@@ -367,9 +341,7 @@ class TeamDetailsPage extends StatelessWidget {
                               return const Center(
                                 child: Padding(
                                   padding: EdgeInsets.only(top: 20, bottom: 20),
-                                  child: CircularProgressIndicator(
-                                    color: _accent,
-                                  ),
+                                  child: CircularProgressIndicator(color: _accent),
                                 ),
                               );
                             }
@@ -412,11 +384,7 @@ class TeamDetailsPage extends StatelessWidget {
             ? Image(image: img, fit: BoxFit.cover)
             : Container(
                 color: const Color(0xFFEFEFEF),
-                child: const Icon(
-                  Icons.groups_2_outlined,
-                  color: Colors.black38,
-                  size: 36,
-                ),
+                child: const Icon(Icons.groups_2_outlined, color: Colors.black38, size: 36),
               ),
       ),
     );
@@ -472,8 +440,8 @@ class TeamDetailsPage extends StatelessWidget {
         crossAxisAlignment: align == TextAlign.right
             ? CrossAxisAlignment.end
             : align == TextAlign.center
-            ? CrossAxisAlignment.center
-            : CrossAxisAlignment.start,
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
         children: [
           Text(l, style: label, textAlign: align),
           const SizedBox(height: 6),
@@ -500,7 +468,9 @@ class TeamDetailsPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Row(
-              children: [Expanded(child: item("Status", statusLabel))],
+              children: [
+                Expanded(child: item("Status", statusLabel)),
+              ],
             ),
           ),
           const SizedBox(height: 12),
@@ -518,9 +488,7 @@ class TeamDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _membersGrid(
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> memberDocs,
-  ) {
+  Widget _membersGrid(List<QueryDocumentSnapshot<Map<String, dynamic>>> memberDocs) {
     const roles = ['top', 'jungle', 'middle', 'bottom', 'support'];
 
     final byRole = <String, String>{};
@@ -566,119 +534,109 @@ class TeamDetailsPage extends StatelessWidget {
     }
 
     final memberCards = orderedUids.map((uid) {
-      String role = '';
-      for (final d in memberDocs) {
-        if (d.id == uid) {
-          role = (d.data()['role'] ?? '').toString();
-          break;
-        }
-      }
+  String role = '';
+  for (final d in memberDocs) {
+    if (d.id == uid) {
+      role = (d.data()['role'] ?? '').toString();
+      break;
+    }
+  }
 
-      return SizedBox(
-        width: 100,
-        child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('Player')
-              .doc(uid)
-              .snapshots(),
-          builder: (context, pSnap) {
-            final pd = pSnap.data?.data() ?? {};
-            final playerName = (pd['Name'] ?? '').toString().trim();
-            final photo = (pd['ProfilePhoto'] ?? '').toString();
-            final provider = _imageProvider(photo);
+  return SizedBox(
+    width: 100,
+    child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('Player').doc(uid).snapshots(),
+      builder: (context, pSnap) {
+        final pd = pSnap.data?.data() ?? {};
+        final playerName = (pd['Name'] ?? '').toString().trim();
+        final photo = (pd['ProfilePhoto'] ?? '').toString();
+        final provider = _imageProvider(photo);
 
-            return Column(
-              children: [
-                Container(
-                  width: 66,
-                  height: 66,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: _accent, width: 2.8),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+        return Column(
+          children: [
+            Container(
+              width: 66,
+              height: 66,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: _accent, width: 2.8),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                  child: ClipOval(
-                    child: provider == null
-                        ? const Icon(
-                            Icons.person,
-                            color: Colors.black38,
-                            size: 32,
-                          )
-                        : Image(image: provider, fit: BoxFit.cover),
-                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: provider == null
+                    ? const Icon(Icons.person, color: Colors.black38, size: 32)
+                    : Image(image: provider, fit: BoxFit.cover),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: _accent,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                role.isEmpty ? 'MEMBER' : role.toUpperCase(),
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
                 ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _accent,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    role.isEmpty ? 'MEMBER' : role.toUpperCase(),
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  playerName.isEmpty ? 'Player' : playerName,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.visible,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    color: Colors.black,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    }).toList();
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              playerName.isEmpty ? 'Player' : playerName,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.visible,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                color: Colors.black,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}).toList();
 
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: memberCards.take(2).map((card) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: card,
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: memberCards.skip(2).take(3).map((card) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: card,
-            );
-          }).toList(),
-        ),
-      ],
-    );
+return Column(
+  children: [
+    Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: memberCards.take(2).map((card) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: card,
+        );
+      }).toList(),
+    ),
+    const SizedBox(height: 20),
+    Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: memberCards.skip(2).take(3).map((card) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: card,
+        );
+      }).toList(),
+    ),
+  ],
+);
   }
 }
 
@@ -759,8 +717,7 @@ class _HoverTapState extends State<_HoverTap> {
 
   @override
   Widget build(BuildContext context) {
-    final canHover =
-        Theme.of(context).platform != TargetPlatform.android &&
+    final canHover = Theme.of(context).platform != TargetPlatform.android &&
         Theme.of(context).platform != TargetPlatform.iOS;
 
     final scale = _down ? 0.98 : (_hover && canHover ? 1.02 : 1.0);
@@ -792,7 +749,7 @@ class _HoverTapState extends State<_HoverTap> {
                         color: Colors.black.withOpacity(0.10),
                         blurRadius: 14,
                         offset: const Offset(0, 8),
-                      ),
+                      )
                     ]
                   : const [],
             ),
