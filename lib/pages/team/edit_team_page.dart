@@ -42,7 +42,7 @@ class _EditTeamPageState extends State<EditTeamPage> {
   }
 
   // ======================
-  // Load team (LOGIC UNCHANGED)
+  // Load team 
   // ======================
   Future<void> _loadTeam() async {
     final doc =
@@ -66,7 +66,7 @@ class _EditTeamPageState extends State<EditTeamPage> {
   }
 
   // ======================
-  // Pick logo (LOGIC UNCHANGED)
+  // Pick logo 
   // ======================
   Future<void> _pickLogo() async {
     final picker = ImagePicker();
@@ -78,7 +78,7 @@ class _EditTeamPageState extends State<EditTeamPage> {
   }
 
   // ======================
-  // Save (LOGIC UNCHANGED)
+  // Save 
   // ======================
   Future<void> _save() async {
     if (_loading) return;
@@ -111,7 +111,7 @@ class _EditTeamPageState extends State<EditTeamPage> {
         elevation: 0,
         centerTitle: true,
 
-        // ✅ BACK ARROW — EXACT LOGIN/SIGNUP STYLE
+       
        leading: IconButton(
   icon: const Icon(
     Icons.arrow_back_ios_new_rounded,
@@ -158,7 +158,7 @@ class _EditTeamPageState extends State<EditTeamPage> {
                     ),
                   ),
 
-                  // Edit pill (same as Create Team / Profile)
+                  // Edit pill
                   Positioned(
                     right: -4,
                     bottom: 8,
@@ -212,7 +212,7 @@ class _EditTeamPageState extends State<EditTeamPage> {
 
             const SizedBox(height: 40),
 
-            // ===== SAVE BUTTON (GRAY) =====
+            // ===== SAVE BUTTON =====
             Center(
               child: SizedBox(
                 width: 210,
@@ -253,7 +253,7 @@ class _EditTeamPageState extends State<EditTeamPage> {
 }
 
 // ======================================================
-// Login / Signup underline field (UNCHANGED BEHAVIOR)
+// Login / Signup underline field
 // ======================================================
 class _UnderlineField extends StatelessWidget {
   final String label;
