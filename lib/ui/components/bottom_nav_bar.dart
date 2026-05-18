@@ -46,7 +46,7 @@ class _BottomNavBarState extends State<BottomNavBar>
     _slideController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
-      value: 1.0, // ✅ ابدأ من 1.0 (مكتمل) حتى تكون الدائرة داخل الـ bubble من البداية
+      value: 1.0, 
     );
     _detectUserType();
   }
@@ -180,10 +180,8 @@ class _BubbleBarPainter extends CustomPainter {
 
     final itemWidth = size.width / itemCount;
 
-    // حركة أفقية أبطأ
     final moveT = Curves.easeInOut.transform(animationProgress);
 
-    // ارتفاع القبة أسرع
     final liftT = Curves.easeOutBack.transform(
       math.min(animationProgress * 1.4, 1.0),
     );
@@ -194,7 +192,6 @@ class _BubbleBarPainter extends CustomPainter {
 
     final barHeight = size.height;
 
-    // مقاسات أخف
     final domeHeight = 25.0 * liftT;
     final domeRadius = 20.0;
     final domeWidth = 65.0;
@@ -281,7 +278,6 @@ class _NavItemState extends State<_NavItem>
       CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
     );
 
-    // ✅ ابدأ الـ animation مكتملاً إذا كان العنصر محدداً من البداية
     if (widget.isSelected) {
       _controller.value = 1.0;
     }
