@@ -311,7 +311,7 @@ Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Spacer(flex: 2), // <-- هذا اللي ينزلهم تحت
+                const Spacer(flex: 2), 
 
                 _fieldBlock(
                   errorText: emailErr,
@@ -451,7 +451,7 @@ Expanded(
                   ),
                 ),
 
-                const Spacer(flex: 8), // <-- يوازن الفراغ تحت
+                const Spacer(flex: 8), 
               ],
             ),
           ),
