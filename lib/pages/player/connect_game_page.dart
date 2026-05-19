@@ -389,7 +389,11 @@ return null;
 
   Future<void> _connectLoL(String uid, StreamController<_ProgressState> ctrl) async {
     final svc = RiotLinkService(FirebaseFirestore.instance);
-
+await _ensureLolNameTagNotUsed(
+  currentUid: uid,
+  gameName: _riotNameCtrl.text.trim(),
+  tagLine: _riotTagCtrl.text.trim(),
+);
     ctrl.add(const _ProgressState(value: 0.12, label: 'Linking LoL account...'));
     await svc.connectLoL(
       playerId: uid,
@@ -432,6 +436,42 @@ await _ensureGameAccountNotUsed(
 
     ctrl.add(const _ProgressState(value: 0.95, label: 'Finalizing...'));
   }
+
+Future<void> _ensureLolNameTagNotUsed({
+  required String currentUid,
+  required String gameName,
+  required String tagLine,
+}) async {
+  final name = gameName.trim().toLowerCase();
+  final tag = tagLine.trim().toLowerCase();
+
+  final players = await FirebaseFirestore.instance.collection('Player').get();
+
+  for (final p in players.docs) {
+    if (p.id == currentUid) continue;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('Player')
+        .doc(p.id)
+        .collection('linkedGames')
+        .doc('lol')
+        .get();
+
+    final data = doc.data();
+    if (data == null) continue;
+
+    final existingName =
+        (data['gameName'] ?? '').toString().trim().toLowerCase();
+    final existingTag =
+        (data['tagLine'] ?? '').toString().trim().toLowerCase();
+
+    if (existingName == name && existingTag == tag) {
+      throw Exception(
+        'This League of Legends account is already connected to another SPARK profile.',
+      );
+    }
+  }
+}
 
 Future<void> _ensureGameAccountNotUsed({
   required String currentUid,
@@ -1018,6 +1058,18 @@ print('LINKED DOTA: uid=$uid query=$q accountId=$accountId');
   // ─────────────────────────────────────────────────────────────
 
   Future<void> _onConnect() async {
+  await _checkDuplicateAccountLive();
+
+  final hasDuplicate =
+      _lolDuplicateError != null ||
+      _pubgDuplicateError != null ||
+      _dotaDuplicateError != null;
+
+  if (hasDuplicate) {
+    _formKey.currentState?.validate();
+    return;
+  }
+
   if (!(_formKey.currentState?.validate() ?? false)) return;
 
   setState(() {
