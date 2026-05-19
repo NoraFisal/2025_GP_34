@@ -273,11 +273,11 @@ _MetaInfo(data: data),
         (dashboard['values'] as Map?)?.cast<String, dynamic>() ?? {};
 
     final values = <String, dynamic>{...rootValues, ...dashValues};
-    if (values.isEmpty) {
-      values.addAll(stats);
-    }
+if (values.isEmpty) {
+  values.addAll(stats);
+}
 
-    final overallScore = (dashboard['overallScore'] ?? m['score'] ?? 0);
+final overallScoreRaw = dashboard['overallScore'] ?? m['score'];
     final computedAt = m['dashboardComputedAt'];
     final lastFetchedAt = m['lastFetchedAt'];
 
@@ -293,16 +293,27 @@ _MetaInfo(data: data),
         .toList();
 
     final recent = matches.take(recentN).toList();
-    final previous = matches.skip(recentN).take(recentN).toList();
+
+final trendN = min(recentN, matches.length ~/ 2);
+final previous = trendN >= 5
+    ? matches.skip(trendN).take(trendN).toList()
+    : <Map<String, dynamic>>[];
 
     final cfg = _GameReportConfig.forGame(gameId);
 
     final recentAgg = _aggregateMatches(cfg, recent);
     final prevAgg = _aggregateMatches(cfg, previous);
+if (values.isEmpty && recentAgg.isNotEmpty) {
+  values.addAll(_normalizedValuesFromAgg(cfg, recentAgg));
+}
 
+final overallScore =
+    overallScoreRaw ?? (recentAgg['performanceScore'] ?? 0);
     final strengths = _pickTop(values, cfg.metricOrder, top: true, count: 3);
     final weaknesses = _pickTop(values, cfg.metricOrder, top: false, count: 3);
-    final trends = _computeTrends(cfg, recentAgg, prevAgg);
+    final trends = previous.isNotEmpty
+    ? _computeTrends(cfg, recentAgg, prevAgg)
+    : <_Trend>[];
     final goals = _makeGoals(cfg, recentAgg, weaknesses);
 
     final reportFocus =
@@ -351,7 +362,7 @@ if (shouldCreateFocus && goals.isNotEmpty) {
       overallScore: (overallScore is num) ? overallScore.toDouble() : 0.0,
       stats: stats,
       values: values,
-      computedAt: _asDateTime(computedAt),
+      computedAt: _asDateTime(computedAt) ?? _asDateTime(lastFetchedAt),
       lastFetchedAt: _asDateTime(lastFetchedAt),
       focusUpdatedAt: focusUpdatedAt,
       recentMatches: recent,
@@ -397,7 +408,39 @@ if (shouldCreateFocus && goals.isNotEmpty) {
 
     return out;
   }
+static Map<String, double> _normalizedValuesFromAgg(
+  _GameReportConfig cfg,
+  Map<String, double> agg,
+) {
+  final out = <String, double>{};
 
+  double clamp01(double v) => v.clamp(0.0, 1.0);
+
+  if (cfg.gameId == 'dota2') {
+    out['score'] = clamp01((agg['performanceScore'] ?? 0) / 100);
+    out['winRate'] = clamp01(agg['winRate'] ?? 0);
+    out['kda'] = clamp01((agg['kda'] ?? 0) / 5);
+    out['gpm'] = clamp01((agg['gpm'] ?? 0) / 650);
+    out['xpm'] = clamp01((agg['xpm'] ?? 0) / 750);
+    out['lastHits'] = clamp01((agg['lastHits'] ?? 0) / 250);
+  } else if (cfg.gameId == 'lol') {
+    out['score'] = clamp01((agg['performanceScore'] ?? 0) / 100);
+    out['winRate'] = clamp01(agg['winRate'] ?? 0);
+    out['kda'] = clamp01((agg['kda'] ?? 0) / 4);
+    out['csPerMin'] = clamp01((agg['csPerMin'] ?? 0) / 9);
+    out['goldPerMin'] = clamp01((agg['goldPerMin'] ?? 0) / 500);
+    out['visionPerMin'] = clamp01((agg['visionPerMin'] ?? 0) / 2);
+    out['kp'] = clamp01(agg['kp'] ?? 0);
+  } else {
+    out['score'] = clamp01((agg['performanceScore'] ?? 0) / 100);
+    out['winRate'] = clamp01(agg['winRate'] ?? 0);
+    out['kills'] = clamp01((agg['kills'] ?? 0) / 10);
+    out['damage'] = clamp01((agg['damage'] ?? 0) / 1500);
+    out['placement'] = clamp01(1 - ((agg['placement'] ?? 100) / 100));
+  }
+
+  return out;
+}
   static List<_Pick> _pickTop(
     Map<String, dynamic> values,
     List<String> orderedKeys, {
@@ -1173,7 +1216,6 @@ height: _fabOpen ? 52 : 56,
 
     // ── Palette ────────────────────────────────────────────────────────────
     const pAccent  = PdfColor.fromInt(0xFFEB3D24);
-    const pBg      = PdfColor.fromInt(0xFFFAFAFA);
     const pSurface = PdfColor.fromInt(0xFFF0F3F4);
     const pText    = PdfColor.fromInt(0xFF0F1419);
     const pMuted   = PdfColor.fromInt(0xFF536471);
@@ -2275,8 +2317,10 @@ class _Trends extends StatelessWidget {
           border: Border.all(color: _line),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Text(
-          "Not enough match history to calculate trends (need at least 2× the selected range).",
+        child: Text(
+          "Not enough match history to calculate trends. "
+"Found ${data.recentMatches.length + data.prevMatches.length} matches, "
+"but need ${20 * 2} matches.",
           style: TextStyle(fontFamily: 'Inter', color: _muted),
         ),
       );
