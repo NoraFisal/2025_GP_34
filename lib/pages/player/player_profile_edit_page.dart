@@ -51,7 +51,116 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
   static const Color _danger = Color.fromRGBO(199, 0, 0, 1);
 
   bool _autoPopupOpen = false;
+Future<bool> _confirmExitEdit() async {
+  final shouldLeave = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black.withOpacity(0.45),
+    builder: (ctx) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          width: 320,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _line),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: _accent, width: 2),
+                ),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  color: _accent,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'Your changes will not be saved. Are you sure you want to leave?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: _text,
+                  height: 1.25,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    height: 36,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _muted,
+                        side: const BorderSide(color: _line),
+                        shape: const StadiumBorder(),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 100,
+                    height: 36,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: const StadiumBorder(),
+                      ),
+                      child: const Text(
+                        'Leave',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 
+  return shouldLeave ?? false;
+}
   // ─────────────────────────────────────────────
   // Game canonicalization 
   // ─────────────────────────────────────────────
@@ -211,6 +320,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     super.dispose();
   }
 
+
   int _calcAge(DateTime dob) {
     final now = DateTime.now();
     int years = now.year - dob.year;
@@ -223,36 +333,46 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
   String _formatDob(DateTime dob) => DateFormat('dd/MM/yyyy').format(dob);
 
   Future<void> _pickDob() async {
-    if (_saving) return;
+  if (_saving) return;
 
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _dob ?? DateTime(now.year - 21, now.month, now.day),
-      firstDate: DateTime(now.year - 80),
-      lastDate: DateTime(now.year - 10, now.month, now.day),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: _accent,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-            dialogBackgroundColor: Colors.white,
-          ),
-          child: child!,
-        );
-      },
-    );
+  final now = DateTime.now();
+  final maxDob = DateTime(now.year - 13, now.month, now.day);
+  final minDob = DateTime(now.year - 80);
 
-    if (picked != null) {
-      setState(() {
-        _dob = picked;
-        _dobCtrl.text = _formatDob(picked);
-      });
-    }
+  DateTime initialDob = _dob ?? DateTime(now.year - 21, now.month, now.day);
+
+  // If old saved DOB is younger than 13, force picker to open at valid age
+  if (initialDob.isAfter(maxDob)) {
+    initialDob = maxDob;
   }
+
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: initialDob,
+    firstDate: minDob,
+    lastDate: maxDob,
+    builder: (context, child) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: _accent,
+            onPrimary: Colors.white,
+            onSurface: Colors.black,
+          ),
+          dialogBackgroundColor: Colors.white,
+        ),
+        child: child!,
+      );
+    },
+  );
+
+  if (picked != null) {
+    setState(() {
+      _dob = picked;
+      _dobCtrl.text = _formatDob(picked);
+    });
+  }
+}
 
   Future<void> _pickImage() async {
     if (_saving) return;
@@ -561,7 +681,14 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       GestureDetector(
-  onTap: _saving ? null : () => Navigator.pop(context),
+  onTap: _saving
+    ? null
+    : () async {
+        if (await _confirmExitEdit()) {
+          if (mounted) Navigator.pop(context);
+        }
+      },
+      
   child: const Padding(
     padding: EdgeInsets.all(8),
     child: Icon(
@@ -635,7 +762,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
                                   _switchRow('Show City', _showCity,
                                       (v) => setState(() => _showCity = v)),
                                   _lineDivider(),
-                                  _switchRow('Gender', _showGender,
+                                  _switchRow('Show Gender', _showGender,
                                       (v) => setState(() => _showGender = v)),
                                 ],
                               ),
@@ -738,46 +865,50 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     );
   }
 
+Widget _gameTile(String id) {
+  final label = _gameLabelFromId(id);
+  final checked = _gameIds.contains(id);
 
-  Widget _gameTile(String id) {
-    final label = _gameLabelFromId(id);
-    final checked = _gameIds.contains(id);
-
-    return CheckboxListTile(
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      value: checked,
-      onChanged: _saving
-          ? null
-          : (v) {
-              setState(() {
-                if (v == true) {
-                  _gameIds.add(id);
-                } else {
-                  _gameIds.remove(id);
-                }
-              });
-            },
-      title: Text(
-        label,
-        style: const TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 15,
-          fontWeight: FontWeight.w400,
-          color: _text,
-        ),
+  return CheckboxListTile(
+    dense: true,
+    visualDensity: VisualDensity.compact,
+    contentPadding:
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+    value: checked,
+    onChanged: _saving
+        ? null
+        : (v) {
+            setState(() {
+              if (v == true) {
+                _gameIds.add(id);
+              } else {
+                _gameIds.remove(id);
+              }
+            });
+          },
+    title: Text(
+      label,
+      style: const TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 15,
+        fontWeight: FontWeight.w400,
+        color: _text,
       ),
-      controlAffinity: ListTileControlAffinity.leading,
-      fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-        if (states.contains(MaterialState.selected)) return _dark;
-        return Colors.white;
-      }),
-      checkColor: Colors.white,
-      side: const BorderSide(color: _line, width: 2),
-      checkboxShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-    );
-  }
+    ),
+    controlAffinity: ListTileControlAffinity.leading,
+    fillColor: MaterialStateProperty.resolveWith<Color>((states) {
+      if (states.contains(MaterialState.selected)) {
+        return _accent;
+      }
+      return Colors.white;
+    }),
+    checkColor: Colors.white,
+    side: const BorderSide(color: _line, width: 2),
+    checkboxShape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(4),
+    ),
+  );
+}
 
   Widget _avatarBlock() {
     return Center(
@@ -847,7 +978,6 @@ class XSwitch extends StatelessWidget {
 
   final bool value;
   final ValueChanged<bool>? onChanged;
-
   final Color accent;
   final Color border;
   final Color onTrack;
@@ -856,9 +986,8 @@ class XSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final disabled = onChanged == null;
-
-    final trackColor = value ? onTrack : offTrack;
-    final thumbColor = value ? Colors.white : accent;
+    final trackColor = value ? accent : const Color(0xFFD1D5DB);
+    final thumbColor = Colors.white;
 
     return Opacity(
       opacity: disabled ? 0.65 : 1,
@@ -873,17 +1002,17 @@ class XSwitch extends StatelessWidget {
           decoration: BoxDecoration(
             color: trackColor,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: border, width: 2),
           ),
           child: AnimatedAlign(
             duration: const Duration(milliseconds: 160),
             curve: Curves.easeOut,
-            alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+            alignment:
+                value ? Alignment.centerRight : Alignment.centerLeft,
             child: Container(
               width: 22,
               height: 22,
-              decoration: BoxDecoration(
-                color: thumbColor,
+              decoration: const BoxDecoration(
+                color: Colors.white,
                 shape: BoxShape.circle,
               ),
             ),
