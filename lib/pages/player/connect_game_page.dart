@@ -1101,11 +1101,8 @@ print('LINKED DOTA: uid=$uid query=$q accountId=$accountId');
     
 await computeAndSyncBadgesGlobal(uid);
 if (!mounted) return;
-Navigator.pop(context);
-await Future.delayed(const Duration(milliseconds: 400));
-if (context.mounted) {
-  await BadgeUnlockNotifier.checkAndNotify(context: context, uid: uid);
-}
+Navigator.pop(context, true);
+
   } catch (e) {
     setState(() => _error = _friendlyConnectError(e));
   } finally {
