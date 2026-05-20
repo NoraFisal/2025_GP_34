@@ -40,7 +40,102 @@ class _EditTeamPageState extends State<EditTeamPage> {
     _descCtrl.dispose();
     super.dispose();
   }
+Future<bool> _confirmExitEdit() async {
+  final shouldLeave = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black.withOpacity(0.45),
+    builder: (ctx) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          width: 320,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFCFD9DE)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: _accent, width: 2),
+                ),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  color: _accent,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'Your changes will not be saved. Are you sure you want to leave?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: _text,
+                  height: 1.25,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    height: 36,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _muted,
+                        side: const BorderSide(color: Color(0xFFCFD9DE)),
+                        shape: const StadiumBorder(),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 100,
+                    height: 36,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: const StadiumBorder(),
+                      ),
+                      child: const Text('Leave'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 
+  return shouldLeave ?? false;
+}
   // ======================
   // Load team 
   // ======================
@@ -118,7 +213,11 @@ class _EditTeamPageState extends State<EditTeamPage> {
     size: 18,
     color: Color(0xFF6B7280),
   ),
-  onPressed: () => Navigator.pop(context),
+ onPressed: () async {
+  if (await _confirmExitEdit()) {
+    if (mounted) Navigator.pop(context);
+  }
+},
 ),
 
 
