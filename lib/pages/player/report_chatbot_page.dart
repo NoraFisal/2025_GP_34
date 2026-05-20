@@ -22,7 +22,7 @@ class _ReportChatbotPageState extends State<ReportChatbotPage> {
   static const Color _muted = Color(0xFF536471);
   static const Color _line = Color(0xFFCFD9DE);
 
-static const String _openRouterKey = 'YOUR_API_KEY';
+  static const String _openRouterKey = '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';
 
   static const int _dailyMessageLimit = 15;
 
@@ -35,10 +35,11 @@ static const String _openRouterKey = 'YOUR_API_KEY';
   int _sentToday = 0;
   String _todayKey = '';
   bool _conversationClosed = false;
+bool _isSending = false;
 
 final List<String> _models = [
-  'openrouter/free',
   'deepseek/deepseek-chat-v3-0324:free',
+  'openrouter/free',
   'deepseek/deepseek-r1-0528:free',
   'meta-llama/llama-3.3-70b-instruct:free',
 ];
@@ -80,7 +81,7 @@ final List<String> _models = [
         .trim();
   }
 
-  Future<String> _askOpenRouter(String prompt) async {
+  Future<String> _askOpenRouter(String prompt, String language) async {
   String lastError = '';
 
   for (final model in _models) {
@@ -99,7 +100,7 @@ final List<String> _models = [
             {
               'role': 'system',
               'content':
-                  'You are Spark Chatbot. Explain esports reports simply and clearly. Reply in the same language as the player.',
+                  'You are Spark Chatbot. Selected language: $language. If language is ar, answer only in Arabic. If language is en, answer only in English. Keep answers short.',
             },
             {
               'role': 'user',
@@ -109,9 +110,12 @@ final List<String> _models = [
           'temperature': 0.6,
           'max_tokens': 120,
         }),
-      );
+      ).timeout(const Duration(seconds: 10)
+    );
+    
 
-      final data = jsonDecode(response.body);
+      final decodedBody = utf8.decode(response.bodyBytes);
+final data = jsonDecode(decodedBody);
 
       if (response.statusCode != 200) {
         lastError =
@@ -206,6 +210,7 @@ final List<String> _models = [
 
   Future<void> _sendMessage() async {
     final text = _controller.text.trim();
+    if (_isSending) return;
     if (text.isEmpty) return;
 
     final today = _dateKey();
@@ -260,7 +265,7 @@ final List<String> _models = [
 
     _controller.clear();
     _scrollToBottom();
-
+_isSending = true;
     try {
       final reportPrompt = '''
 You are Spark Chatbot, a helpful assistant inside the SPARK esports platform.
@@ -292,7 +297,7 @@ Player question:
 $text
 ''';
 
-      final reply = await _askOpenRouter(reportPrompt);
+      final reply = await _askOpenRouter(reportPrompt, _selectedLanguage);
       setState(() {
         _messages[_messages.length - 1] = {
           'isBot': true,
@@ -306,14 +311,16 @@ $text
         _messages[_messages.length - 1] = {
           'isBot': true,
           'text': _selectedLanguage == 'ar'
-              ? 'عذرًا، لم أتمكن من الحصول على رد الآن.\n\n$e'
-              : 'Sorry, I could not get a response right now.\n\n$e',
+              ? 'عذرًا، لم أتمكن من الحصول على رد الآن. حاول مرة أخرى.'
+              : 'Sorry, I could not get a response right now. Please try again.'
         };
       });
 
       _scrollToBottom();
-    }
-  }
+} finally {
+  _isSending = false;
+}
+}
 
   Widget _botAvatar() {
     return Container(
@@ -518,8 +525,9 @@ Widget _buildTopicPicker() {
               ),
               child: Text(
                 msg['text'].toString(),
-                textDirection:
-                    _selectedLanguage == 'ar' ? TextDirection.rtl : null,
+                textDirection: msg['text'].toString().contains(RegExp(r'[\u0600-\u06FF]'))
+    ? TextDirection.rtl
+    : TextDirection.ltr,
                 style: TextStyle(
                   fontFamily: 'Inter',
                   color: isBot ? _text : Colors.white,
