@@ -388,7 +388,7 @@ class _BadgeHexIcon extends StatelessWidget {
     required this.label,
     required this.sublabel,
     required this.rawData,
-    required this.uid,          // ✅ new
+    required this.uid,          
     this.earnedAt,
   });
  
@@ -399,7 +399,7 @@ class _BadgeHexIcon extends StatelessWidget {
     'medal':   Icons.military_tech_rounded,
   };
  
-  //          and passes uid to _BadgeDetailSheetLoader for live date fetch
+  
   void _onTap(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -3153,7 +3153,31 @@ class _PerformanceTabsSectionState extends State<_PerformanceTabsSection> {
 
   Widget _addGameButton(BuildContext context) {
     return _HoverTap(
-      onTap: () => Navigator.pushNamed(context, "/connect-game"),
+      onTap: () async {
+  final result = await Navigator.pushNamed(context, "/connect-game");
+
+  if (result == true && mounted) {
+    setState(() {});
+  }
+  if (!context.mounted) return;
+
+  if (result == true && mounted) {
+  setState(() {});
+}
+
+final uid = FirebaseAuth.instance.currentUser?.uid;
+
+if (result == true && uid != null) {
+  await Future.delayed(const Duration(milliseconds: 800));
+
+  if (!mounted) return;
+
+  await BadgeUnlockNotifier.checkAndNotify(
+    context: context,
+    uid: uid,
+  );
+}
+},
       borderRadius: BorderRadius.circular(999),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
