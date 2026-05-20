@@ -163,7 +163,7 @@ class _HomePageState extends State<HomePage> {
                 'type': 'Tournament',
                 'name': (doc.data()['Title'] ?? 'Unknown Tournament')
                     .toString(),
-                'image': '',
+                'image': (doc.data()['image'] ?? '').toString(),
               },
             ),
       ];
@@ -369,77 +369,75 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-Widget _buildPlayerContent() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      _buildSection(
-        title: 'Players Spotlight',
-        onSeeAll: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const LeaderboardPage()),
+  Widget _buildPlayerContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSection(
+          title: 'Players Spotlight',
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const LeaderboardPage()),
+          ),
+          content: _buildPlayersRow(),
         ),
-        content: _buildPlayersRow(),
-      ),
-      const SizedBox(height: 35),
-      _buildSection(
-        title: 'Upcoming Tournaments',
-        onSeeAll: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AllTournamentsPage()),
+        const SizedBox(height: 35),
+        _buildSection(
+          title: 'Upcoming Tournaments',
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AllTournamentsPage()),
+          ),
+          content: _buildTournamentsGrid(),
         ),
-        content: _buildTournamentsGrid(),
-      ),
-      const SizedBox(height: 35),
-      _buildSection(
-        title: 'Explore Teams',
-        onSeeAll: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AcceptedTeamsPage()),
+        const SizedBox(height: 35),
+        _buildSection(
+          title: 'Explore Teams',
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AcceptedTeamsPage()),
+          ),
+          content: _buildTeamsRow(),
         ),
-        content: _buildTeamsRow(),
-      ),
-      const SizedBox(height: 30),
-    ],
-  );
-}
+        const SizedBox(height: 30),
+      ],
+    );
+  }
 
-Widget _buildOrganizerContent() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      _buildSection(
-        title: 'Players Spotlight',
-        onSeeAll: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const LeaderboardPage()),
+  Widget _buildOrganizerContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSection(
+          title: 'Players Spotlight',
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const LeaderboardPage()),
+          ),
+          content: _buildPlayersRow(),
         ),
-        content: _buildPlayersRow(),
-      ),
-      const SizedBox(height: 35),
-      _buildSection(
-        title: 'All Tournaments',
-        onSeeAll: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AllTournamentsPage()),
+        const SizedBox(height: 35),
+        _buildSection(
+          title: 'All Tournaments',
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AllTournamentsPage()),
+          ),
+          content: _buildTournamentsGrid(),
         ),
-        content: _buildTournamentsGrid(),
-      ),
-      const SizedBox(height: 35),
-      _buildSection(
-        title: 'Explore Teams',
-        onSeeAll: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AcceptedTeamsPage()),
+        const SizedBox(height: 35),
+        _buildSection(
+          title: 'Explore Teams',
+          onSeeAll: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AcceptedTeamsPage()),
+          ),
+          content: _buildTeamsRow(),
         ),
-        content: _buildTeamsRow(),
-      ),
-      const SizedBox(height: 30),
-    ],
-  );
-}
-
- 
+        const SizedBox(height: 30),
+      ],
+    );
+  }
 
   Widget _buildSection({
     required String title,
@@ -550,7 +548,11 @@ Widget _buildOrganizerContent() {
                       ? Icon(
                           result['type'] == 'Player'
                               ? Icons.person
-                              : Icons.group,
+                              : result['type'] == 'Team'
+                              ? Icons.groups_rounded
+                              : result['type'] == 'Tournament'
+                              ? Icons.emoji_events_rounded
+                              : Icons.business_rounded,
                           color: Colors.black38,
                           size: 18,
                         )
@@ -794,4 +796,555 @@ Widget _buildOrganizerContent() {
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontFamily: 'In
+                          fontFamily: 'Inter',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: _accent,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // Tournaments — horizontal scroll, big image card
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Widget _buildTournamentsGrid() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('Tournament')
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 200,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasError) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Text(
+                'Error loading tournaments',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  color: _muted,
+                ),
+              ),
+            ),
+          );
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Text(
+                'No tournaments yet',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  color: _muted,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final tournaments = snapshot.data!.docs;
+        final count = tournaments.length > 5 ? 5 : tournaments.length;
+
+        return SizedBox(
+          height: 210,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: count,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final t = tournaments[index];
+              final data = t.data() as Map<String, dynamic>;
+              return _TournamentCard(
+                tournamentId: t.id,
+                title: data['Title'] ?? 'Tournament',
+                timeText: data['time'] ?? '',
+                dateText: data['date'] ?? '',
+                imageBase64: data['image'] ?? '',
+                game: data['game'] ?? '',
+                organizerId: data['organizerID'] ?? '',
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// TOURNAMENT CARD — big image top, info below
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class _TournamentCard extends StatelessWidget {
+  final String tournamentId;
+  final String title;
+  final String timeText;
+  final String dateText;
+  final String imageBase64;
+  final String game;
+  final String organizerId;
+
+  static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
+  static const Color _text = Color(0xFF0F1419);
+  static const Color _muted = Color(0xFF536471);
+  static const Color _line = Color(0xFFCFD9DE);
+
+  const _TournamentCard({
+    required this.tournamentId,
+    required this.title,
+    required this.timeText,
+    required this.dateText,
+    this.imageBase64 = '',
+    this.game = '',
+    this.organizerId = '',
+  });
+
+  String _getGameLogo(String gameName) {
+    final g = gameName.toLowerCase();
+    if (g.contains('pubg')) return 'assets/images/pubg.png';
+    if (g.contains('lol') || g.contains('league'))
+      return 'assets/images/lol.png';
+    if (g.contains('valorant')) return 'assets/images/valorant.png';
+    if (g.contains('call of duty') || g.contains('cod'))
+      return 'assets/images/cod.png';
+    if (g.contains('fortnite')) return 'assets/images/fortnite.png';
+    return 'assets/images/pubg.png';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ViewTournamentPage(tournamentId: tournamentId),
+        ),
+      ),
+      child: Container(
+        width: 160,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _line),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Big image on top ──────────────────
+            Stack(
+              children: [
+                // Background image
+                SizedBox(
+                  height: 110,
+                  width: double.infinity,
+                  child: imageBase64.isNotEmpty
+                      ? Image.memory(
+                          base64Decode(imageBase64),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _PlaceholderBg(game: game),
+                        )
+                      : _PlaceholderBg(game: game),
+                ),
+                // Dark gradient so text would be readable if needed
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.28),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                // Game logo pill — bottom-left of image
+                if (game.isNotEmpty)
+                  Positioned(
+                    bottom: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.92),
+                        borderRadius: BorderRadius.circular(999),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: Image.asset(
+                              _getGameLogo(game),
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.sports_esports_rounded,
+                                color: _accent,
+                                size: 14,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            game,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: _text,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+
+            // ── Info below image ──────────────────
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: _text,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    // Time & date row
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.access_time_rounded,
+                          size: 11,
+                          color: _muted,
+                        ),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            timeText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: _muted,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.calendar_month_rounded,
+                          size: 11,
+                          color: _muted,
+                        ),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            dateText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: _muted,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    // Organizer chip — at the bottom
+                    if (organizerId.isNotEmpty)
+                      _OrganizerChip(organizerId: organizerId),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Placeholder when no image
+class _PlaceholderBg extends StatelessWidget {
+  final String game;
+  static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
+
+  const _PlaceholderBg({required this.game});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFFFEDE9),
+      child: Center(
+        child: Icon(
+          Icons.sports_esports_rounded,
+          color: _accent.withOpacity(0.3),
+          size: 40,
+        ),
+      ),
+    );
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ORGANIZER CHIP  (compact, shown at bottom of card)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class _OrganizerChip extends StatelessWidget {
+  final String organizerId;
+  static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
+  static const Color _text = Color(0xFF0F1419);
+  static const Color _line = Color(0xFFCFD9DE);
+
+  const _OrganizerChip({required this.organizerId});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('Organizer')
+          .doc(organizerId)
+          .get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || !snapshot.data!.exists)
+          return const SizedBox.shrink();
+        final data = snapshot.data!.data() as Map<String, dynamic>;
+        final name = (data['Name'] ?? 'Organizer').toString();
+        final photo = (data['ProfilePhoto'] ?? '').toString();
+        final imageProvider = getProfileImage(photo);
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Small avatar
+            Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: _accent, width: 1.2),
+                color: const Color(0xFFEFEFEF),
+              ),
+              child: ClipOval(
+                child: imageProvider != null
+                    ? Image(image: imageProvider, fit: BoxFit.cover)
+                    : const Icon(Icons.person, color: Colors.black38, size: 11),
+              ),
+            ),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: _text,
+                  height: 1,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ============ UI Components ============
+
+class _TopBar extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
+  static const Color _text = Color(0xFF0F1419);
+  static const Color _muted = Color(0xFF536471);
+  static const Color _chip = Color(0xFFF0F3F4);
+  static const Color _line = Color(0xFFCFD9DE);
+
+  const _TopBar({required this.controller, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: _chip,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _line),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: Row(
+        children: [
+          const Icon(Icons.search, size: 18, color: _muted),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              cursorColor: _accent,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: _text,
+              ),
+              decoration: const InputDecoration(
+                hintText: 'Search players, teams, organizers, tournaments...',
+                hintStyle: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: _muted,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SeeAllPill extends StatelessWidget {
+  final VoidCallback onTap;
+  static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
+
+  const _SeeAllPill({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        height: 28,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: _accent,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        alignment: Alignment.center,
+        child: const Text(
+          'See all',
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            height: 1,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CIRCLE STROKE IMAGE — always red border, no gold
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class _CircleStrokeImage extends StatelessWidget {
+  final double size;
+  final double borderWidth;
+  final ImageProvider? imageProvider;
+
+  static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
+
+  const _CircleStrokeImage({
+    required this.size,
+    required this.borderWidth,
+    required this.imageProvider,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final inner = size - (borderWidth * 2) - 6;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: _accent, width: borderWidth),
+      ),
+      padding: const EdgeInsets.all(3),
+      child: ClipOval(
+        child: Container(
+          color: const Color(0xFFEFEFEF),
+          child: imageProvider == null
+              ? const Icon(Icons.person, color: Colors.black38, size: 26)
+              : Image(
+                  image: imageProvider!,
+                  width: inner,
+                  height: inner,
+                  fit: BoxFit.cover,
+                ),
+        ),
+      ),
+    );
+  }
+}
