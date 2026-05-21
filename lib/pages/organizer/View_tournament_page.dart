@@ -38,15 +38,19 @@ class _ViewTournamentPageState extends State<ViewTournamentPage> {
     if (date.isEmpty || time.isEmpty) return currentStatus;
 
     try {
+      // إذا كانت مكتملة يدوياً، تبقى مكتملة
       if (currentStatus.toLowerCase() == 'completed') {
         return 'completed';
       }
 
       DateTime tournamentDateTime;
 
+      // محاولة parse التاريخ بصيغ مختلفة
       try {
+        // جرب الصيغة yyyy-MM-dd أولاً
         tournamentDateTime = DateTime.parse(date);
       } catch (e) {
+        // جرب صيغ أخرى
         try {
           tournamentDateTime = DateFormat('dd/MM/yyyy').parse(date);
         } catch (e2) {
@@ -59,18 +63,21 @@ class _ViewTournamentPageState extends State<ViewTournamentPage> {
         }
       }
 
+      // Parse الوقت وإضافته للتاريخ
       try {
         final timeParts = time.split(':');
         int hour = 0;
         int minute = 0;
 
+        // التعامل مع صيغة 12 ساعة (AM/PM)
         if (time.toUpperCase().contains('AM') ||
             time.toUpperCase().contains('PM')) {
-          final timeFormat = DateFormat.jm(); 
+          final timeFormat = DateFormat.jm(); // 12-hour format
           final parsedTime = timeFormat.parse(time);
           hour = parsedTime.hour;
           minute = parsedTime.minute;
         } else {
+          // صيغة 24 ساعة
           hour = int.parse(timeParts[0].trim());
           minute = int.parse(timeParts[1].trim());
         }
@@ -84,6 +91,7 @@ class _ViewTournamentPageState extends State<ViewTournamentPage> {
         );
       } catch (e) {
         debugPrint('Could not parse time: $time, Error: $e');
+        // استخدم التاريخ فقط بدون الوقت
       }
 
       final now = DateTime.now();
@@ -94,7 +102,9 @@ class _ViewTournamentPageState extends State<ViewTournamentPage> {
         'Difference: ${now.difference(tournamentDateTime).inHours} hours',
       );
 
+      // التحقق من الحالة
       if (now.isAfter(tournamentDateTime.add(const Duration(hours: 3)))) {
+        // افترض أن التورنمنت تستمر 3 ساعات
         return 'completed';
       } else if (now.isAfter(tournamentDateTime)) {
         return 'ongoing';
@@ -125,6 +135,7 @@ class _ViewTournamentPageState extends State<ViewTournamentPage> {
         final data = doc.data()!;
         final organizerId = data['organizerID'] ?? '';
 
+        // احسب الحالة الفعلية
         final currentStatus = data['status'] ?? 'upcoming';
         final actualStatus = _calculateStatus(
           data['date'] ?? '',
@@ -137,6 +148,7 @@ class _ViewTournamentPageState extends State<ViewTournamentPage> {
         debugPrint('Date: ${data['date']}');
         debugPrint('Time: ${data['time']}');
 
+        // إذا تغيرت الحالة، حدّث Firestore
         if (actualStatus != currentStatus) {
           await FirebaseFirestore.instance
               .collection('Tournament')
@@ -158,6 +170,7 @@ class _ViewTournamentPageState extends State<ViewTournamentPage> {
     }
   }
 
+  // دالة لعرض رسالة منبثقة
   void _showCompletedTournamentDialog() {
     showDialog(
       context: context,
@@ -364,7 +377,7 @@ String _getGameLogo(String gameName) {
                             ),
                           ),
                         ),
-                        if (_isOwner) ...[
+                        if (_isOwner && !isCompleted) ...[
                           _circleButton(
                             size: actionBtnSize,
                             icon: Icons.edit_rounded,
