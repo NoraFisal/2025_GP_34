@@ -187,7 +187,8 @@ Line:
 Replace the existing chatbot API key with your own key.
 
 Note:
-The chatbot currently has a limited usage quota (approximately 15 messages per day depending on API credits and limits).
+The chatbot currently has a limited usage quota of approximately 15 messages per day depending on API credits and limits.
+
 ---
 
 # Step 5 – Run the Application
