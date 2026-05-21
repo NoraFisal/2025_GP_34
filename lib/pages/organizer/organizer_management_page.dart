@@ -29,13 +29,17 @@ class _OrganizerManagementPageState extends State<OrganizerManagementPage> {
 
   bool _loading = true;
   bool _saving = false;
+  bool _hasChanges = false;
+
+  String _originalName = '';
+  String _originalBio = '';
 
   // ===== Brand =====
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
   static const Color _dark = Color.fromRGBO(54, 52, 53, 1);
 
   // ===== X-like palette =====
-  static const Color _bg = Color(0xFFF7F7F7); // off-white
+  static const Color _bg = Color(0xFFF7F7F7);
   static const Color _text = Color(0xFF0F1419);
   static const Color _muted = Color(0xFF536471);
   static const Color _line = Color(0xFFCFD9DE);
@@ -47,6 +51,9 @@ class _OrganizerManagementPageState extends State<OrganizerManagementPage> {
   void initState() {
     super.initState();
     _load();
+
+    _nameCtrl.addListener(_checkChanges);
+    _bioCtrl.addListener(_checkChanges);
   }
 
   @override
@@ -54,6 +61,17 @@ class _OrganizerManagementPageState extends State<OrganizerManagementPage> {
     _nameCtrl.dispose();
     _bioCtrl.dispose();
     super.dispose();
+  }
+
+  void _checkChanges() {
+    final hasChanges =
+        _nameCtrl.text.trim() != _originalName.trim() ||
+        _bioCtrl.text.trim() != _originalBio.trim() ||
+        _pickedBytes != null;
+
+    if (hasChanges != _hasChanges) {
+      setState(() => _hasChanges = hasChanges);
+    }
   }
 
   Future<void> _load() async {
@@ -66,6 +84,9 @@ class _OrganizerManagementPageState extends State<OrganizerManagementPage> {
 
     _nameCtrl.text = (data['Name'] ?? '').toString();
     _bioCtrl.text = (data['Info'] ?? '').toString();
+
+    _originalName = _nameCtrl.text;
+    _originalBio = _bioCtrl.text;
 
     final photo = (data['ProfilePhoto'] ?? '').toString();
     if (photo.startsWith('http')) {
@@ -92,6 +113,7 @@ class _OrganizerManagementPageState extends State<OrganizerManagementPage> {
 
     setState(() {
       _pickedBytes = bytes;
+      _hasChanges = true;
     });
   }
 
@@ -102,7 +124,122 @@ class _OrganizerManagementPageState extends State<OrganizerManagementPage> {
     return null;
   }
 
-  // ===== Auto popup (like player edit) =====
+  Future<void> _showExitDialog() async {
+    if (!_hasChanges) {
+      Navigator.pop(context);
+      return;
+    }
+
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            width: 320,
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _line),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _accent, width: 2),
+                  ),
+                  child: const Icon(
+                    Icons.warning_rounded,
+                    color: _accent,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Are you sure you want to leave?\nYour changes will be lost.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    color: _text,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      height: 36,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _muted,
+                          side: const BorderSide(color: _line),
+                          shape: const StadiumBorder(),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: 100,
+                      height: 36,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _accent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: const StadiumBorder(),
+                        ),
+                        child: const Text(
+                          'Leave',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _showAutoPopup(
     String message, {
     bool success = false,
@@ -228,35 +365,34 @@ class _OrganizerManagementPageState extends State<OrganizerManagementPage> {
     }
   }
 
-  // ===== Typography (same style as player edit) =====
   TextStyle get _titleStyle => const TextStyle(
-        fontFamily: 'Inter',
-        fontSize: 28,
-        fontWeight: FontWeight.w900,
-        letterSpacing: -0.3,
-        color: _accent,
-      );
+    fontFamily: 'Inter',
+    fontSize: 28,
+    fontWeight: FontWeight.w900,
+    letterSpacing: -0.3,
+    color: _accent,
+  );
 
   TextStyle get _fieldText => const TextStyle(
-        fontFamily: 'Inter',
-        fontSize: 17,
-        fontWeight: FontWeight.w400,
-        color: _text,
-      );
+    fontFamily: 'Inter',
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    color: _text,
+  );
 
   TextStyle get _labelInside => const TextStyle(
-        fontFamily: 'Inter',
-        fontSize: 17,
-        fontWeight: FontWeight.w400,
-        color: _muted,
-      );
+    fontFamily: 'Inter',
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    color: _muted,
+  );
 
   TextStyle get _floatingLabel => const TextStyle(
-        fontFamily: 'Inter',
-        fontSize: 13,
-        fontWeight: FontWeight.w400,
-        color: _muted,
-      );
+    fontFamily: 'Inter',
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    color: _muted,
+  );
 
   InputDecoration _xField(String labelText) {
     return InputDecoration(
@@ -294,120 +430,127 @@ class _OrganizerManagementPageState extends State<OrganizerManagementPage> {
     final w = MediaQuery.of(context).size.width;
     final maxW = math.min(600.0, w - 48);
 
-    return Scaffold(
-      backgroundColor: _bg,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxW),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 18),
+    return WillPopScope(
+      onWillPop: () async {
+        if (_hasChanges) {
+          await _showExitDialog();
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: _bg,
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxW),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 18),
 
-                  // Back arrow: same feel as player edit
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-  onTap: _saving ? null : () => Navigator.pop(context),
-  child: const Padding(
-    padding: EdgeInsets.all(8),
-    child: Icon(
-      Icons.arrow_back_ios_new_rounded,
-      color: _muted,
-      size: 20,
-    ),
-  ),
-),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Edit profile',
-                          style: _titleStyle,
-                          textAlign: TextAlign.center,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: _saving ? null : _showExitDialog,
+                          child: const Padding(
+                            padding: EdgeInsets.all(8),
+                            child: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: _muted,
+                              size: 20,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 46),
-                    ],
-                  ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Edit profile',
+                            style: _titleStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(width: 46),
+                      ],
+                    ),
 
-                  const SizedBox(height: 14),
+                    const SizedBox(height: 14),
 
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(bottom: 18),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _avatarBlock(),
-                            const SizedBox(height: 22),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(bottom: 18),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _avatarBlock(),
+                              const SizedBox(height: 22),
 
-                            TextFormField(
-                              controller: _nameCtrl,
-                              enabled: !_saving,
-                              maxLength: 24,
-                              style: _fieldText,
-                              cursorColor: _accent,
-                              validator: (v) => _nameErrorText(v ?? ''),
-                              decoration: _xField('Name'),
-                            ),
-                            const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _nameCtrl,
+                                enabled: !_saving,
+                                maxLength: 24,
+                                style: _fieldText,
+                                cursorColor: _accent,
+                                validator: (v) => _nameErrorText(v ?? ''),
+                                decoration: _xField('Name'),
+                              ),
+                              const SizedBox(height: 16),
 
-                            TextFormField(
-                              controller: _bioCtrl,
-                              enabled: !_saving,
-                              maxLines: 3,
-                              style: _fieldText,
-                              cursorColor: _accent,
-                              decoration: _xField('Bio'),
-                            ),
+                              TextFormField(
+                                controller: _bioCtrl,
+                                enabled: !_saving,
+                                maxLines: 3,
+                                style: _fieldText,
+                                cursorColor: _accent,
+                                decoration: _xField('Bio'),
+                              ),
 
-                            const SizedBox(height: 26),
+                              const SizedBox(height: 26),
 
-                            // Save button EXACT like player edit
-                            Center(
-                              child: SizedBox(
-                                width: 176,
-                                height: 44,
-                                child: ElevatedButton(
-                                  onPressed: _saving ? null : _save,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: _accent,
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    shape: const StadiumBorder(),
+                              Center(
+                                child: SizedBox(
+                                  width: 176,
+                                  height: 44,
+                                  child: ElevatedButton(
+                                    onPressed: _saving ? null : _save,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: _accent,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      shape: const StadiumBorder(),
+                                    ),
+                                    child: _saving
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Save',
+                                            style: TextStyle(
+                                              fontFamily: 'Inter',
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
                                   ),
-                                  child: _saving
-                                      ? const SizedBox(
-                                          width: 18,
-                                          height: 18,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white,
-                                          ),
-                                        )
-                                      : const Text(
-                                          'Save',
-                                          style: TextStyle(
-                                            fontFamily: 'Inter',
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -522,7 +665,12 @@ class _HoverPressPillState extends State<_HoverPressPill> {
                 borderRadius: BorderRadius.circular(46.5),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color.fromRGBO(246, 195, 188, 1).withOpacity(_hover ? 0.8 : 0.5),
+                    color: const Color.fromRGBO(
+                      246,
+                      195,
+                      188,
+                      1,
+                    ).withOpacity(_hover ? 0.8 : 0.5),
                     blurRadius: 20,
                     offset: const Offset(0, 4),
                   ),
