@@ -139,6 +139,8 @@ Future<bool> _confirmExitEdit() async {
   // ======================
   // Load team 
   // ======================
+  bool _autoPopupOpen = false;
+
   Future<void> _loadTeam() async {
     final doc =
         await FirebaseFirestore.instance.collection('Team').doc(widget.teamId).get();
@@ -175,6 +177,93 @@ Future<bool> _confirmExitEdit() async {
   // ======================
   // Save 
   // ======================
+  Future<void> _showAutoPopup(String message) async {
+  if (!mounted) return;
+  if (_autoPopupOpen) return;
+
+  _autoPopupOpen = true;
+
+  showGeneralDialog(
+    context: context,
+    useRootNavigator: true,
+    barrierDismissible: false,
+    barrierColor: Colors.black.withOpacity(0.08),
+    transitionDuration: const Duration(milliseconds: 160),
+    pageBuilder: (_, __, ___) {
+      return Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: 320,
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFCFD9DE)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _accent, width: 2),
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: _accent,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    color: _text,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+    transitionBuilder: (_, anim, __, child) {
+      final curved = CurvedAnimation(parent: anim, curve: Curves.easeOut);
+      return FadeTransition(
+        opacity: curved,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.98, end: 1.0).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+
+  await Future.delayed(const Duration(milliseconds: 1200));
+
+  if (mounted) {
+    try {
+      Navigator.of(context, rootNavigator: true).pop();
+    } catch (_) {}
+  }
+
+  _autoPopupOpen = false;
+}
   Future<void> _save() async {
     if (_loading) return;
 
@@ -188,7 +277,14 @@ Future<bool> _confirmExitEdit() async {
           'logoUrl': 'data:image/png;base64,${base64Encode(_logoBytes!)}',
       });
 
-      if (mounted) Navigator.pop(context, true);
+      if (!mounted) return;
+
+
+if (!mounted) return;
+
+await _showAutoPopup("Saved successfully");
+
+if (mounted) Navigator.pop(context, true);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
