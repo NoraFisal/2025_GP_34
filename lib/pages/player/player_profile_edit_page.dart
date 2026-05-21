@@ -26,6 +26,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
 
   DateTime? _dob;
 
+  /// store CANONICAL ids ONLY: lol / pubg / dota2
   final Set<String> _gameIds = {};
 
   String _currentPhotoB64 = '';
@@ -33,34 +34,141 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
 
   bool _loading = true;
   bool _saving = false;
-  bool _hasChanges = false;
 
   bool _showAge = true;
   bool _showCity = true;
   bool _showGender = true;
 
-  String _originalName = '';
-  String _originalCity = '';
-  String _originalDobText = '';
-  String _originalPhotoB64 = '';
-  bool _originalShowAge = true;
-  bool _originalShowCity = true;
-  bool _originalShowGender = true;
-  Set<String> _originalGameIds = {};
-
+  // ===== Brand =====
   static const Color _accent = Color.fromRGBO(235, 61, 36, 1);
   static const Color _dark = Color.fromRGBO(54, 52, 53, 1);
-  static const Color _bg = Color(0xFFF7F7F7);
+
+  // ===== X-like palette =====
+  static const Color _bg = Color(0xFFF7F7F7); // off-white
   static const Color _text = Color(0xFF0F1419);
   static const Color _muted = Color(0xFF536471);
   static const Color _line = Color(0xFFCFD9DE);
   static const Color _danger = Color.fromRGBO(199, 0, 0, 1);
 
   bool _autoPopupOpen = false;
+Future<bool> _confirmExitEdit() async {
+  final shouldLeave = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black.withOpacity(0.45),
+    builder: (ctx) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          width: 320,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _line),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: _accent, width: 2),
+                ),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  color: _accent,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'Your changes will not be saved. Are you sure you want to leave?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: _text,
+                  height: 1.25,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    height: 36,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _muted,
+                        side: const BorderSide(color: _line),
+                        shape: const StadiumBorder(),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 100,
+                    height: 36,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: const StadiumBorder(),
+                      ),
+                      child: const Text(
+                        'Leave',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+
+  return shouldLeave ?? false;
+}
+  // ─────────────────────────────────────────────
+  // Game canonicalization 
+  // ─────────────────────────────────────────────
 
   String _normalizeGameId(String raw) {
     final s = raw.toLowerCase().trim();
 
+    // LOL variants
     if (s == 'lol' ||
         s == 'leagueoflegends' ||
         s == 'league of legends' ||
@@ -69,10 +177,13 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
       return 'lol';
     }
 
+    // PUBG variants
     if (s == 'pubg' || s == 'playerunknown battlegrounds') return 'pubg';
 
+    // Dota variants
     if (s == 'dota' || s == 'dota2' || s == 'dota 2') return 'dota2';
 
+    
     if (s == 'valorant' || s == 'val') return '';
 
     return s;
@@ -95,31 +206,6 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
   void initState() {
     super.initState();
     _load();
-
-    _nameCtrl.addListener(_checkChanges);
-    _cityCtrl.addListener(_checkChanges);
-    _dobCtrl.addListener(_checkChanges);
-  }
-
-  void _checkChanges() {
-    final hasChanges =
-        _nameCtrl.text.trim() != _originalName.trim() ||
-        _cityCtrl.text.trim() != _originalCity.trim() ||
-        _dobCtrl.text.trim() != _originalDobText.trim() ||
-        _pickedBytes != null ||
-        _showAge != _originalShowAge ||
-        _showCity != _originalShowCity ||
-        _showGender != _originalShowGender ||
-        !_setsEqual(_gameIds, _originalGameIds);
-
-    if (hasChanges != _hasChanges) {
-      setState(() => _hasChanges = hasChanges);
-    }
-  }
-
-  bool _setsEqual(Set<String> a, Set<String> b) {
-    if (a.length != b.length) return false;
-    return a.containsAll(b) && b.containsAll(a);
   }
 
   Future<void> _load() async {
@@ -131,6 +217,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
         _nameCtrl.text = me.username;
         _cityCtrl.text = me.city;
 
+        // normalize from service games into canonical ids
         _gameIds
           ..clear()
           ..addAll(
@@ -148,6 +235,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
             await FirebaseFirestore.instance.collection('Player').doc(uid).get();
         final data = doc.data() ?? {};
 
+        // DOB (new + legacy)
         final rawDob = data['dob'] ?? data['BirthDate'] ?? data['dobText'];
         DateTime? parsedDob;
         if (rawDob is Timestamp) parsedDob = rawDob.toDate();
@@ -170,12 +258,14 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
           _showCity = _cityCtrl.text.trim().isNotEmpty;
         }
 
+        // Prefer canonical list if present
         final ids = data['gameIds'];
         if (ids is List) {
           _gameIds
             ..clear()
             ..addAll(ids.map((e) => _normalizeGameId('$e')).where((id) => id.isNotEmpty));
         } else {
+          // Games (legacy "Game" + new "games")
           final legacyGame = data['Game'];
           final newGames = data['games'];
 
@@ -194,18 +284,10 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
           }
         }
 
+        // Photo (legacy + new)
         final p = data['profilePhoto'] ?? data['ProfilePhoto'];
         if (p is String && p.isNotEmpty) _currentPhotoB64 = p;
       }
-
-      _originalName = _nameCtrl.text;
-      _originalCity = _cityCtrl.text;
-      _originalDobText = _dobCtrl.text;
-      _originalPhotoB64 = _currentPhotoB64;
-      _originalShowAge = _showAge;
-      _originalShowCity = _showCity;
-      _originalShowGender = _showGender;
-      _originalGameIds = Set<String>.from(_gameIds);
     } catch (e) {
       if (mounted) {
         await _showAutoPopup("Load error", danger: true);
@@ -238,6 +320,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     super.dispose();
   }
 
+
   int _calcAge(DateTime dob) {
     final now = DateTime.now();
     int years = now.year - dob.year;
@@ -250,37 +333,46 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
   String _formatDob(DateTime dob) => DateFormat('dd/MM/yyyy').format(dob);
 
   Future<void> _pickDob() async {
-    if (_saving) return;
+  if (_saving) return;
 
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _dob ?? DateTime(now.year - 21, now.month, now.day),
-      firstDate: DateTime(now.year - 80),
-      lastDate: DateTime(now.year - 10, now.month, now.day),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: _accent,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-            dialogBackgroundColor: Colors.white,
-          ),
-          child: child!,
-        );
-      },
-    );
+  final now = DateTime.now();
+  final maxDob = DateTime(now.year - 13, now.month, now.day);
+  final minDob = DateTime(now.year - 80);
 
-    if (picked != null) {
-      setState(() {
-        _dob = picked;
-        _dobCtrl.text = _formatDob(picked);
-      });
-      _checkChanges();
-    }
+  DateTime initialDob = _dob ?? DateTime(now.year - 21, now.month, now.day);
+
+  // If old saved DOB is younger than 13, force picker to open at valid age
+  if (initialDob.isAfter(maxDob)) {
+    initialDob = maxDob;
   }
+
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: initialDob,
+    firstDate: minDob,
+    lastDate: maxDob,
+    builder: (context, child) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: _accent,
+            onPrimary: Colors.white,
+            onSurface: Colors.black,
+          ),
+          dialogBackgroundColor: Colors.white,
+        ),
+        child: child!,
+      );
+    },
+  );
+
+  if (picked != null) {
+    setState(() {
+      _dob = picked;
+      _dobCtrl.text = _formatDob(picked);
+    });
+  }
+}
 
   Future<void> _pickImage() async {
     if (_saving) return;
@@ -295,7 +387,6 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
 
     final bytes = await file.readAsBytes();
     setState(() => _pickedBytes = bytes);
-    _checkChanges();
   }
 
   String? _nameErrorText(String v) {
@@ -305,122 +396,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     return null;
   }
 
-  Future<void> _showExitDialog() async {
-    if (!_hasChanges) {
-      Navigator.pop(context);
-      return;
-    }
-
-    return showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Container(
-            width: 320,
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: _line),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 24,
-                  offset: const Offset(0, 12),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: _accent, width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.warning_rounded,
-                    color: _accent,
-                    size: 32,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                const Text(
-                  'Are you sure you want to leave?\nYour changes will be lost.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                    color: _text,
-                    height: 1.25,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 100,
-                      height: 36,
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: _muted,
-                          side: const BorderSide(color: _line),
-                          shape: const StadiumBorder(),
-                        ),
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    SizedBox(
-                      width: 100,
-                      height: 36,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          Navigator.pop(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _accent,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: const StadiumBorder(),
-                        ),
-                        child: const Text(
-                          'Leave',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
+  // ===== Auto popup =====
   Future<void> _showAutoPopup(
     String message, {
     bool success = false,
@@ -531,9 +507,11 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
         photoB64 = base64Encode(_pickedBytes!);
       }
 
+     
       final ids = _gameIds.toList();
       final labels = ids.map(_gameLabelFromId).toList();
 
+   
       await PlayerService.updateMe(
         username: _nameCtrl.text.trim(),
         age: computedAge ?? 18,
@@ -542,20 +520,24 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
         profilePhoto: photoB64,
       );
 
+     
       final update = <String, dynamic>{
+        // New keys
         'username': _nameCtrl.text.trim(),
         'city': _cityCtrl.text.trim(),
         'age': computedAge ?? 18,
-        'gameIds': ids,
-        'games': labels,
+        'gameIds': ids,         
+        'games': labels,         
         'profilePhoto': photoB64,
 
+        // Legacy keys
         'Name': _nameCtrl.text.trim(),
         'City': _cityCtrl.text.trim(),
         'Age': computedAge ?? 18,
         'Game': labels,
         'ProfilePhoto': photoB64,
 
+        // Flags
         'showAge': _showAge,
         'showCity': _showCity,
         'showGender': _showGender,
@@ -591,6 +573,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     }
   }
 
+  // ===== Typography  =====
   TextStyle get _titleStyle => const TextStyle(
         fontFamily: 'Inter',
         fontSize: 28,
@@ -682,174 +665,169 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     final w = MediaQuery.of(context).size.width;
     final maxW = math.min(600.0, w - 48);
 
-    return WillPopScope(
-      onWillPop: () async {
-        if (_hasChanges) {
-          await _showExitDialog();
-          return false;
+    return Scaffold(
+      backgroundColor: _bg,
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxW),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 18),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+  onTap: _saving
+    ? null
+    : () async {
+        if (await _confirmExitEdit()) {
+          if (mounted) Navigator.pop(context);
         }
-        return true;
       },
-      child: Scaffold(
-        backgroundColor: _bg,
-        body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxW),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 18),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: _saving ? null : _showExitDialog,
-                          child: const Padding(
-                            padding: EdgeInsets.all(8),
-                            child: Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              color: _muted,
-                              size: 20,
+      
+  child: const Padding(
+    padding: EdgeInsets.all(8),
+    child: Icon(
+      Icons.arrow_back_ios_new_rounded,
+      color: _muted,
+      size: 20,
+    ),
+  ),
+),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Edit profile',
+                          style: _titleStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(width: 46),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 18),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _avatarBlock(),
+                            const SizedBox(height: 22),
+                            TextFormField(
+                              controller: _nameCtrl,
+                              enabled: !_saving,
+                              maxLength: 24,
+                              style: _fieldText,
+                              cursorColor: _accent,
+                              validator: (v) => _nameErrorText(v ?? ''),
+                              decoration: _xField('Name'),
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Edit profile',
-                            style: _titleStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(width: 46),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.only(bottom: 18),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _avatarBlock(),
-                              const SizedBox(height: 22),
-                              TextFormField(
-                                controller: _nameCtrl,
-                                enabled: !_saving,
-                                maxLength: 24,
-                                style: _fieldText,
-                                cursorColor: _accent,
-                                validator: (v) => _nameErrorText(v ?? ''),
-                                decoration: _xField('Name'),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _cityCtrl,
+                              enabled: !_saving,
+                              style: _fieldText,
+                              cursorColor: _accent,
+                              decoration: _xField('City'),
+                            ),
+                            const SizedBox(height: 16),
+                            GestureDetector(
+                              onTap: _pickDob,
+                              child: AbsorbPointer(
+                                child: TextFormField(
+                                  controller: _dobCtrl,
+                                  enabled: !_saving,
+                                  style: _fieldText,
+                                  cursorColor: _accent,
+                                  decoration: _xField('Birth date'),
+                                ),
                               ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _cityCtrl,
-                                enabled: !_saving,
-                                style: _fieldText,
-                                cursorColor: _accent,
-                                decoration: _xField('City'),
+                            ),
+                            const SizedBox(height: 22),
+                            Container(
+                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                              decoration: _xCard(),
+                              child: Column(
+                                children: [
+                                  _switchRow('Show Age', _showAge,
+                                      (v) => setState(() => _showAge = v)),
+                                  _lineDivider(),
+                                  _switchRow('Show City', _showCity,
+                                      (v) => setState(() => _showCity = v)),
+                                  _lineDivider(),
+                                  _switchRow('Show Gender', _showGender,
+                                      (v) => setState(() => _showGender = v)),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              GestureDetector(
-                                onTap: _pickDob,
-                                child: AbsorbPointer(
-                                  child: TextFormField(
-                                    controller: _dobCtrl,
-                                    enabled: !_saving,
-                                    style: _fieldText,
-                                    cursorColor: _accent,
-                                    decoration: _xField('Birth date'),
+                            ),
+                            const SizedBox(height: 18),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 2),
+                              child: Text('Game', style: _sectionLabel),
+                            ),
+                            const SizedBox(height: 12),
+
+                           
+                            Container(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              decoration: _xCard(),
+                              child: Column(
+                                children: [
+                                  _gameTile('lol'),
+                                  _lineDivider(),
+                                  _gameTile('pubg'),
+                                  _lineDivider(),
+                                  _gameTile('dota2'),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: 26),
+                            Center(
+                              child: SizedBox(
+                                width: 176,
+                                height: 44,
+                                child: ElevatedButton(
+                                  onPressed: _saving ? null : _save,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _accent,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: const StadiumBorder(),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 22),
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                                decoration: _xCard(),
-                                child: Column(
-                                  children: [
-                                    _switchRow('Show Age', _showAge, (v) {
-                                      setState(() => _showAge = v);
-                                      _checkChanges();
-                                    }),
-                                    _lineDivider(),
-                                    _switchRow('Show City', _showCity, (v) {
-                                      setState(() => _showCity = v);
-                                      _checkChanges();
-                                    }),
-                                    _lineDivider(),
-                                    _switchRow('Gender', _showGender, (v) {
-                                      setState(() => _showGender = v);
-                                      _checkChanges();
-                                    }),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 18),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 2),
-                                child: Text('Game', style: _sectionLabel),
-                              ),
-                              const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(vertical: 6),
-                                decoration: _xCard(),
-                                child: Column(
-                                  children: [
-                                    _gameTile('lol'),
-                                    _lineDivider(),
-                                    _gameTile('pubg'),
-                                    _lineDivider(),
-                                    _gameTile('dota2'),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 26),
-                              Center(
-                                child: SizedBox(
-                                  width: 176,
-                                  height: 44,
-                                  child: ElevatedButton(
-                                    onPressed: _saving ? null : _save,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: _accent,
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                      shape: const StadiumBorder(),
-                                    ),
-                                    child: _saving
-                                        ? const SizedBox(
-                                            width: 18,
-                                            height: 18,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        : const Text(
-                                            'Save',
-                                            style: TextStyle(
-                                              fontFamily: 'Inter',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w400,
-                                            ),
+                                  child: _saving
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
                                           ),
-                                  ),
+                                        )
+                                      : const Text(
+                                          'Save',
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -887,46 +865,50 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
     );
   }
 
-  Widget _gameTile(String id) {
-    final label = _gameLabelFromId(id);
-    final checked = _gameIds.contains(id);
+Widget _gameTile(String id) {
+  final label = _gameLabelFromId(id);
+  final checked = _gameIds.contains(id);
 
-    return CheckboxListTile(
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      value: checked,
-      onChanged: _saving
-          ? null
-          : (v) {
-              setState(() {
-                if (v == true) {
-                  _gameIds.add(id);
-                } else {
-                  _gameIds.remove(id);
-                }
-              });
-              _checkChanges();
-            },
-      title: Text(
-        label,
-        style: const TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 15,
-          fontWeight: FontWeight.w400,
-          color: _text,
-        ),
+  return CheckboxListTile(
+    dense: true,
+    visualDensity: VisualDensity.compact,
+    contentPadding:
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+    value: checked,
+    onChanged: _saving
+        ? null
+        : (v) {
+            setState(() {
+              if (v == true) {
+                _gameIds.add(id);
+              } else {
+                _gameIds.remove(id);
+              }
+            });
+          },
+    title: Text(
+      label,
+      style: const TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 15,
+        fontWeight: FontWeight.w400,
+        color: _text,
       ),
-      controlAffinity: ListTileControlAffinity.leading,
-      fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-        if (states.contains(MaterialState.selected)) return _accent;
-        return Colors.white;
-      }),
-      checkColor: Colors.white,
-      side: const BorderSide(color: _line, width: 2),
-      checkboxShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-    );
-  }
+    ),
+    controlAffinity: ListTileControlAffinity.leading,
+    fillColor: MaterialStateProperty.resolveWith<Color>((states) {
+      if (states.contains(MaterialState.selected)) {
+        return _accent;
+      }
+      return Colors.white;
+    }),
+    checkColor: Colors.white,
+    side: const BorderSide(color: _line, width: 2),
+    checkboxShape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(4),
+    ),
+  );
+}
 
   Widget _avatarBlock() {
     return Center(
@@ -982,6 +964,7 @@ class _PlayerProfileEditPageState extends State<PlayerProfileEditPage> {
   }
 }
 
+
 class XSwitch extends StatelessWidget {
   const XSwitch({
     super.key,
@@ -995,7 +978,6 @@ class XSwitch extends StatelessWidget {
 
   final bool value;
   final ValueChanged<bool>? onChanged;
-
   final Color accent;
   final Color border;
   final Color onTrack;
@@ -1004,7 +986,6 @@ class XSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final disabled = onChanged == null;
-
     final trackColor = value ? accent : const Color(0xFFD1D5DB);
     final thumbColor = Colors.white;
 
@@ -1025,12 +1006,13 @@ class XSwitch extends StatelessWidget {
           child: AnimatedAlign(
             duration: const Duration(milliseconds: 160),
             curve: Curves.easeOut,
-            alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+            alignment:
+                value ? Alignment.centerRight : Alignment.centerLeft,
             child: Container(
               width: 22,
               height: 22,
-              decoration: BoxDecoration(
-                color: thumbColor,
+              decoration: const BoxDecoration(
+                color: Colors.white,
                 shape: BoxShape.circle,
               ),
             ),
