@@ -1,6 +1,6 @@
 # AUTHORS
 
-This project **SPARK**   
+This project **SPARK** is an AI-powered esports Team Formation platform
 was developed as part of the Graduation Project 2026 at King Saud University.  
 It is a collaborative effort by the following team members:
 
