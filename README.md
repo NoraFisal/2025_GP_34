@@ -1,38 +1,99 @@
-# SPARK
+# SPARK – AI Integrated Esports Platform
 
-SPARK is a mobile esports Team Formation platform designed to support players and organizers through tournament management, player performance analytics, AI-powered recommendations add Chatbot.
+## Overview
+SPARK is an AI-powered esports platform designed to help players build balanced teams, analyze performance, manage tournaments, and communicate with teammates through a mobile application.
 
-The platform supports multiple esports titles, while the advanced team formation and win-rate prediction features are focused on League of Legends.
+The platform mainly focuses on League of Legends team formation and win-rate prediction using AI models, while also supporting other games such as PUBG and Dota 2.
 
 ---
 
 # GitHub Repository
 
-https://github.com/NoraFisal/2026_GP_34
+Repository Link:
+
+https://github.com/NoraFisal/2025_GP_34
+
+---
+
+# README Information
+
+This README includes:
+- Installation and run instructions
+- Additional testing information
+- API configuration instructions
+- GitHub repository link
+
+---
+
+# Important Note Before Running the Project
+
+Some large files such as AI model files were not uploaded directly to GitHub because they exceed GitHub file size limitations.
+
+These files are required for the application to work correctly.
+
+Download the required files from Google Drive and place them inside the project before running the application.
+
+Google Drive Folder:
+
+https://drive.google.com/drive/folders/198lT-YV4zGBjbtdEf6dAOCV-Fo0by5zW?usp=drive_link
+
+---
+
+# Project Requirements
+
+Before running the project, install the following:
+
+- Flutter SDK
+- Android Studio OR VS Code
+- Dart SDK
+- Android Emulator OR Android Tablet/Phone
+
+Recommended Flutter version:
+Flutter 3.x
 
 ---
 
 # Installation and Run Instructions
 
-## 1. Clone the Repository
+## Step 1 – Clone the Repository
 
 ```bash
-git clone https://github.com/NoraFisal/2026_GP_34.git
-cd 2026_GP_34
+git clone https://github.com/NoraFisal/2025_GP_34.git
 ```
+
+OR download the ZIP file manually from GitHub.
 
 ---
 
-## 2. Open the Project
+## Step 2 – Download Missing Large Files
 
-Open the project using:
+Download the missing large files from the Google Drive folder:
 
-- Visual Studio Code
+https://drive.google.com/drive/folders/198lT-YV4zGBjbtdEf6dAOCV-Fo0by5zW?usp=drive_link
+
+After downloading:
+- Extract the files if needed
+- Place them inside the correct folders in the project directory
+- Replace any missing files
+
+These files mainly include:
+- AI model files
+- Large assets not included in GitHub
+
+Without these files, some AI features may not work correctly.
+
+---
+
+## Step 3 – Open the Project
+
+Open the project folder using:
+- VS Code
+OR
 - Android Studio
 
 ---
 
-## 3. Install Dependencies
+## Step 4 – Install Dependencies
 
 Run:
 
@@ -42,157 +103,184 @@ flutter pub get
 
 ---
 
-## 4. Download Required AI Model Files
+# API Keys Configuration
 
-Due to GitHub file size limitations, the AI model files are hosted separately on Google Drive.
-
-Download the model files from:
-
-```text
-PUT_GOOGLE_DRIVE_MODEL_LINK_HERE
-```
-
-After downloading, place the files inside:
-
-```text
-assets/model/
-```
+The project requires external API keys for some features.
 
 ---
 
-## 5. API Keys Setup
+## Riot API Key (League of Legends)
 
-Some features require external API keys. These keys are not permanently included because some APIs expire periodically or must be generated individually by the tester.
-
----
-
-### Riot Games API Key (League of Legends)
-
-This key is required for:
-
+Used for:
 - Player linking
-- Team formation
-- Match statistics
-- League of Legends performance features
+- Match data
+- Team formation features
 
-Create a Riot API key from:
+Create Riot API Key from:
 
 https://developer.riotgames.com/
 
-Add the key in:
+Place the API key in:
 
 ```text
 lib/data/riot_link_server.dart
-Line 14
 ```
 
-⚠️ Riot development API keys expire every 24 hours and must be regenerated when expired.
+Line:
+
+```text
+14
+```
+
+Replace the existing key with your own Riot API key.
+
+Important:
+- Riot development keys expire every 24 hours
+- The key must be regenerated manually when expired
 
 ---
 
-### PUBG API Key
+## PUBG API Key
 
-This key is required for PUBG player connection and player data retrieval.
+Used for PUBG player connection and stats.
 
-Create a PUBG API key from:
+Create PUBG API Key from:
 
 https://developer.pubg.com/
 
-Add the key in:
+Place the API key in:
 
 ```text
-lib/pages/player/connect_game_page.dart
-Line 60
+lib/pages/player_connect_game_page.dart
 ```
+
+Line:
+
+```text
+60
+```
+
+Replace the existing PUBG API key with your own key.
 
 ---
 
-### Chatbot API Key
+## Chatbot API Key
 
-This key is required for the AI chatbot feature used in player reports.
+Used for the AI chatbot inside player reports.
 
-Create an API key from OpenRouter:
+Create API key from:
 
 https://openrouter.ai/
 
-Add the key in:
+Place the API key in:
 
 ```text
-lib/pages/player/report_chatbot_page.dart
-Line 25
+lib/pages/player_report_chatbot_page.dart
 ```
 
+Line:
+
+```text
+25
+```
+
+Replace the existing chatbot API key with your own key.
+
 ---
 
-### Dota 2
+# Step 5 – Run the Application
 
-Dota 2 integration does not require API key regeneration.
+Connect an Android device OR open an emulator.
 
----
-
-## 6. Run the Application
-
-After completing the API key setup and placing the model files in the correct folder, the application can be launched by opening the project in Visual Studio Code or Android Studio, connecting an Android device or emulator, and running:
+Then run:
 
 ```bash
-flutter pub get
 flutter run
 ```
 
-The app can also be run directly from Visual Studio Code by selecting the connected device and pressing the Run button.
+---
+
+# APK Executable File
+
+The executable APK file is included separately in:
+
+```text
+34_SPARK_Executable
+```
+
+The APK can be installed directly on Android devices without using an emulator.
 
 ---
 
-# Testing Information
+# Additional Testing Information
 
-To test the application properly:
+## Firebase Authentication
 
-1. Run the application on an Android emulator or Android device.
-2. Create a new account or log in using Firebase Authentication.
-3. Verify the email if email verification is enabled.
-4. Connect game accounts through the player profile page.
-5. Test tournaments, teams, reports, lineup recommendations, and chatbot features.
+The application uses Firebase Authentication for:
+- Login
+- Registration
+- Email verification
 
----
-
-# Additional Notes
-
-- Internet connection is required for Firebase services, APIs, and chatbot functionality.
-- Firebase Authentication, Firestore, and Storage are used as backend services.
-- Some features may not function correctly if required API keys are missing or expired.
-- Riot API keys must be updated regularly because development keys expire every 24 hours.
-- AI model files are stored separately because GitHub does not allow files larger than 100 MB.
+Internet connection is required for authentication features.
 
 ---
 
-# Main Technologies
+## Supported Features
 
-- Flutter
-- Dart
-- Firebase Authentication
-- Cloud Firestore
-- Firebase Storage
-- Riot Games API
-- PUBG API
-- OpenDota API
-- OpenRouter API
-- Python
-- Machine Learning Models
+- AI Team Formation
+- Win Rate Prediction
+- Tournament Management
+- Team Chat
+- Performance Reports
+- Riot Account Linking
+- PUBG Player Linking
+- AI Chatbot
+- Explore Teams
+- Player Profiles
 
 ---
 
-# Project Features
+# Notes
 
-SPARK includes:
+- Some APIs may stop working if the API key expires
+- Riot API development keys expire every 24 hours
+- Internet connection is required
+- AI features depend on downloaded model files from Google Drive
 
-- User registration and login
-- Player and organizer profiles
-- Tournament creation and management
-- Team creation and management
-- Player performance reports
-- AI-powered team formation
-- Win-rate prediction
-- Tournament recommendations
-- Chatbot support for report explanation
-- Search and filtering system
-- Real-time esports data integration
+---
+
+# Submission Structure
+
+```text
+GP2_34_SPARK
+│
+├── 34_SPARK_Release-2.pdf
+├── 34_SPARK_UserGuide.pdf
+├── 34_SPARK_AdminGuide.pdf
+├── 34_SPARK_VideoDemo.mp4
+│
+├── 34_SPARK_Software
+│   ├── lib
+│   ├── assets
+│   ├── android
+│   ├── pubspec.yaml
+│   └── README.md
+│
+├── 34_SPARK_Executable
+│   └── app-debug.apk
+```
+
+---
+
+# Authors
+
+SPARK Graduation Project Team
+
+- Nora Albyahi
+- Mariam Alahmed
+- Raghad Al-Dajani
+- Aljawharah Al-Howidy
+
+King Saud University  
+College of Computer and Information Sciences  
+Information Technology Department
