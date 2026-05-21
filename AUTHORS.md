@@ -1,7 +1,7 @@
 # AUTHORS
 
-This project **SPARK** (Saudi Platform for AI-Driven Recognition & Knowledge)  
-was developed as part of the Graduation Project 2025 at King Saud University.  
+This project **SPARK**   
+was developed as part of the Graduation Project 2026 at King Saud University.  
 It is a collaborative effort by the following team members:
 
 ---
