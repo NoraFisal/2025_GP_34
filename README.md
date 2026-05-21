@@ -1,7 +1,7 @@
 # SPARK – AI Integrated Esports Platform
 
 ## Overview
-SPARK is an AI-powered esports platform designed to help players build balanced teams, analyze performance, manage tournaments, and communicate with teammates through a mobile application.
+SPARK is an AI-powered esports Team Formation platform designed to help players build balanced teams, analyze performance, manage tournaments, and communicate with teammates through a mobile application.
 
 The platform mainly focuses on League of Legends team formation and win-rate prediction using AI models, while also supporting other games such as PUBG and Dota 2.
 
@@ -249,28 +249,6 @@ Internet connection is required for authentication features.
 
 ---
 
-# Submission Structure
-
-```text
-GP2_34_SPARK
-│
-├── 34_SPARK_Release-2.pdf
-├── 34_SPARK_UserGuide.pdf
-├── 34_SPARK_AdminGuide.pdf
-├── 34_SPARK_VideoDemo.mp4
-│
-├── 34_SPARK_Software
-│   ├── lib
-│   ├── assets
-│   ├── android
-│   ├── pubspec.yaml
-│   └── README.md
-│
-├── 34_SPARK_Executable
-│   └── app-debug.apk
-```
-
----
 
 # Authors
 
