@@ -351,7 +351,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (searchResults.isNotEmpty || isSearching)
+                    if (_searchController.text.isNotEmpty || isSearching)
                       _buildSearchResults()
                     else ...[
                       if (userType == UserType.organizer)
@@ -490,6 +490,22 @@ class _HomePageState extends State<HomePage> {
       return const Padding(
         padding: EdgeInsets.only(top: 30),
         child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (searchResults.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.only(top: 40),
+          child: Text(
+            'No similar results found',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              color: _muted,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
       );
     }
 
