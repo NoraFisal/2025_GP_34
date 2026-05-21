@@ -186,6 +186,8 @@ Line:
 
 Replace the existing chatbot API key with your own key.
 
+Note:
+The chatbot currently has a limited usage quota (approximately 15 messages per day depending on API credits and limits).
 ---
 
 # Step 5 – Run the Application
@@ -223,17 +225,6 @@ The application uses Firebase Authentication for:
 
 Internet connection is required for authentication features.
 
-## Chatbot Usage Limitation
-
-The AI chatbot feature currently has a daily usage limitation.
-
-Users can send up to:
-
-```text
-15 messages per day
-```
-
-This limitation depends on the external API usage policy and available credits.
 ---
 
 ## Supported Features
